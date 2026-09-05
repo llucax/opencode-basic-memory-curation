@@ -1,0 +1,18 @@
+{
+  "name": "opencode-basic-memory-curation",
+  "private": true,
+  "type": "module",
+  "description": "OpenCode session-context tool, memory-curation skill and AGENTS.md snippet for curated Basic Memory",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test src/*.test.ts",
+    "check": "npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "1.18.27",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@types/node": "^24.0.0"
+  }
+}
