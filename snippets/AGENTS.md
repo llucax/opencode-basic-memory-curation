@@ -8,7 +8,8 @@ Basic Memory is the durable curated knowledge base.
   problems or prior investigations could materially help.
 - Search narrowly first. Read the most relevant note and follow children or
   relations only when more detail is needed.
-- Do not load memory simply because a session started.
+- Do not load memory simply because a session started, nor because the server
+  prompts `recent_activity` then; call it only for recent-change tasks.
 - Prefer current repository/docs state over remembered facts when they
   conflict.
 - Do not duplicate live information into memory when a durable pointer to the
