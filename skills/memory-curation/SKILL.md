@@ -60,6 +60,22 @@ Examples of information that should usually stay live:
 - issue/PR status;
 - mutable deployment state.
 
+## Freshness
+
+Two dates track accuracy, not existence: `reviewed_at` (frontmatter,
+`YYYY-MM-DD`) marks when a person or agent last read the whole note and
+judged it accurate; a trailing `(<source>, checked YYYY-MM-DD)` on an
+observation marks when that specific claim was last verified against its
+source. Only claims that restate mutable state need a checked date; durable
+structural facts get none. Basic Memory's `updated_at` is file mtime, not a
+freshness signal.
+
+A claim past its freshness horizon (roughly three months for things that
+change, longer for things that rarely do) is a hint to re-check, not evidence
+that it is wrong. Re-verifying a claim updates its checked date. With no live
+source to check it against, say so or ask Luca instead of assuming it still
+holds, and update the date only once confirmed.
+
 ## Sources
 
 Attach provenance at the lowest knowledge node whose claims it supports.

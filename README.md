@@ -7,8 +7,9 @@ installed on purpose:
 
 - `skills/memory-curation/SKILL.md`: the policy skill. It says what deserves a
   note, where it belongs in the hierarchy, when to point at a live source
-  instead of copying it, and how to attach provenance. Note syntax stays in
-  Basic Memory's own upstream `memory-notes` skill; this one does not repeat it.
+  instead of copying it, how to attach provenance, and how to date a note's
+  freshness. Note syntax stays in Basic Memory's own upstream `memory-notes`
+  skill; this one does not repeat it.
 - `src/session-context.ts`: an opencode plugin registering one tool,
   `memory_session_context`, which returns the current session ID, the
   configured author, the session's directory and worktree, and cheap git
