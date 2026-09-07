@@ -6,10 +6,17 @@ knowledge in [opencode](https://opencode.ai). Three independent pieces, each
 installed on purpose:
 
 - `skills/memory-curation/SKILL.md`: the policy skill. It says what deserves a
-  note, where it belongs in the hierarchy, when to point at a live source
-  instead of copying it, how to attach provenance, and how to date a note's
-  freshness. Note syntax stays in Basic Memory's own upstream `memory-notes`
-  skill; this one does not repeat it.
+  note and what must never become one, where it belongs in the hierarchy and
+  on disk, how big it should be and why, how to search it back cheaply, when
+  to point at a live source instead of copying it, how to attach provenance,
+  and how to date a note's freshness. It also carries the note syntax, so it
+  replaces Basic Memory's upstream `memory-notes` skill rather than layering
+  on it; see "Replacing memory-notes" below.
+- `skills/memory-curation/scripts/check-layout.py`: a checker for the on-disk
+  conventions. It validates filenames, permalinks, unique titles, source-note
+  naming and frontmatter across every project under `~/basic-memories/`, and
+  exits non-zero on a structural error. The skill tells the agent to run it
+  before calling any memory change finished.
 - `src/session-context.ts`: an opencode plugin registering one tool,
   `memory_session_context`, which returns the current session ID, the
   configured author, the session's directory and worktree, and cheap git
@@ -41,6 +48,25 @@ your own copy.
 `npm install` is required, not optional: module resolution follows the
 symlink's real path, so `@opencode-ai/plugin` is resolved from this repo's own
 `node_modules`.
+
+## Replacing memory-notes
+
+This skill carries the note syntax itself and is meant to be the only memory
+skill loaded. If Basic Memory's upstream `memory-notes` skill is installed,
+unload it, by renaming its `SKILL.md` so opencode's loader stops seeing it:
+
+```sh
+mv ~/.config/opencode/skills/memory-notes/SKILL.md \
+   ~/.config/opencode/skills/memory-notes/REFERENCE.md
+```
+
+Keeping both loaded is worse than picking one. They disagree about how long a
+note should be, upstream arguing that longer notes are more discoverable, and
+an agent reading both tends to follow the more emphatic advice. The measured
+behaviour is the opposite: Basic Memory indexes a note as one row holding the
+entire body, so every search hit pays for the whole note, while observations
+are indexed as separate rows regardless of body length. The reasoning and the
+measurements are in the skill under "Size" and "Retrieval".
 
 ## Configuring the author
 
