@@ -49,6 +49,57 @@ your own copy.
 symlink's real path, so `@opencode-ai/plugin` is resolved from this repo's own
 `node_modules`.
 
+## Why this exists
+
+Basic Memory is a good tool aimed at a different job than this one. Its design
+centre is a knowledge journal, where notes are the artifact, capture is
+generous, and there is no competing source of truth. This skill treats memory
+as a thin, curated pointer layer over sources that are already authoritative:
+repositories, documentation, other skills, and `AGENTS.md` files. Same tool,
+different job, so several of upstream's recommendations are inverted here.
+Each inversion below is a problem that showed up in real use, not a
+preference.
+
+**Notes duplicating what the agent already has.** The most common failure is
+not a wrong note, it is a redundant one. `AGENTS.md` files are auto-loaded, so
+anything written in one is in the agent's context exactly when it applies;
+copying it into memory produces a second version that can only drift from the
+one actually being read. The skill turns this into a test rather than a
+judgement call: name the reader and the moment, and if the fact will already
+be in context then, write nothing. The same applies to something the agent
+just wrote into a repository during the session.
+
+**Length.** Upstream advises writing generously, favouring completeness, and
+argues that longer notes are more discoverable. Measurement says otherwise for
+this use case. `bm inspect chunks` shows a note is indexed as one `entity` row
+holding the entire body plus one row per observation and relation; for a large
+note that whole-body row was 79% of its indexed bytes. Every search hit
+returns the body in full, and `page_size` caps how many results come back, not
+how big they are. On a nine-note base a default search returned 31,706
+characters. Length is therefore a cost paid on every match, and it buys almost
+no discoverability, because observations are indexed as their own rows
+whatever the body does.
+
+**Retrieval.** The same measurement gives the reading strategy. Restricting
+the same query to observations returned 11,728 characters instead of 31,706,
+and consisted of the decisions rather than the prose around them. Observations
+are the progressive-disclosure layer and the body is the full story, so the
+skill says to search observations first and read the whole note only when the
+fact alone is not enough.
+
+**Conventions that only exist as prose.** The tree layout, one `index.md` per
+node with a permalink matching its path, was documented in three places and
+still got broken repeatedly, partly because `write_note` derives the filename
+from the title and cannot produce an `index.md` at all. Prose alone did not
+hold, so the layout rules moved into this skill, the `write_note` limitation
+is stated outright, and `scripts/check-layout.py` makes the conventions
+falsifiable.
+
+**Recall on every turn.** The MCP server instructs connected agents to call
+`recent_activity` when a session starts. `snippets/AGENTS.md` overrides that.
+Memory is recalled when a task needs it, and a session that writes nothing is
+a normal outcome rather than a missed one.
+
 ## Replacing memory-notes
 
 This skill carries the note syntax itself and is meant to be the only memory
@@ -60,13 +111,16 @@ mv ~/.config/opencode/skills/memory-notes/SKILL.md \
    ~/.config/opencode/skills/memory-notes/REFERENCE.md
 ```
 
-Keeping both loaded is worse than picking one. They disagree about how long a
-note should be, upstream arguing that longer notes are more discoverable, and
-an agent reading both tends to follow the more emphatic advice. The measured
-behaviour is the opposite: Basic Memory indexes a note as one row holding the
-entire body, so every search hit pays for the whole note, while observations
-are indexed as separate rows regardless of body length. The reasoning and the
-measurements are in the skill under "Size" and "Retrieval".
+Keeping both loaded is worse than picking one. They disagree about note length
+as described above, and an agent reading both tends to follow the more
+emphatic advice, which is upstream's. Upstream also presents itself as covering
+syntax while giving policy, so the boundary an overlay would need does not
+exist.
+
+Upgrading Basic Memory does not restore the skill: the package ships no skills,
+and any copy on disk was fetched by hand. The risk is a future upgrade
+re-fetching it as `SKILL.md` on purpose, so leave a note next to it saying it
+is unloaded deliberately.
 
 ## Configuring the author
 
