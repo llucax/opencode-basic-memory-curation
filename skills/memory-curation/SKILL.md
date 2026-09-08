@@ -69,7 +69,21 @@ One or two sentences of orientation. What this is and when it matters.
 - part_of [[Frequenz API architecture]]
 ```
 
-`title` MUST be unique across the project.
+`title` MUST be unique within the project. It is what `[[wiki links]]` resolve
+on and what search results show, so it MUST also stand alone: carry enough
+scope to be unambiguous without its path (`Frequenz dispatch flow`, not
+`Dispatch`).
+
+DO NOT restate the permalink in the title. The path is already in the
+permalink, and a title tied to the path has to change whenever the note moves,
+BREAKING EVERY WIKI LINK to it.
+
+CHECK BEFORE WRITING, since a collision found later may already have links
+pointing at it:
+
+```sh
+rg --no-filename '^title: ' ~/basic-memories/<project> | sort
+```
 
 Observations are `- [category] fact #tag`. ONE FACT PER LINE, specific enough
 to stand alone: that line is what search returns. Categories are free-form, but
