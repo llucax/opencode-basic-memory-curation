@@ -5,55 +5,40 @@ description: How to write, structure, size and retrieve durable Basic Memory kno
 
 # Persistent memory
 
-The whole policy for these Basic Memory knowledge bases: what to write, how to
-shape it, and how to get it back.
+Policy for the Basic Memory knowledge bases under `~/basic-memories/`.
 
-This replaces the upstream `memory-notes` skill. That skill's text is kept for
-rare syntax questions at `~/.config/opencode/skills/memory-notes/REFERENCE.md`,
-renamed so the loader ignores it, with its provenance in `UPSTREAM.md` beside
-it. Where the two disagree, notably on note length, this one wins. The reason
-is measured under "Size".
-
-## Purpose
-
-Maintain a compact, durable, navigable knowledge graph with a clear tree spine.
-Memory is not a transcript archive, and it is not a second copy of
-documentation.
+Replaces the upstream `memory-notes` skill, kept for syntax questions at
+`~/.config/opencode/skills/memory-notes/REFERENCE.md`. Where they disagree,
+THIS ONE WINS.
 
 ## Before writing
 
 1. Search for an existing canonical note.
-2. Prefer updating it over creating a near-duplicate.
-3. Find the narrowest appropriate place in the hierarchy.
-4. Split independently useful subtopics into child nodes.
-5. Write nothing when the session produced no durable knowledge.
+2. UPDATE IT rather than creating a near-duplicate.
+3. Place it at the narrowest appropriate node.
+4. Split independently useful subtopics into children.
+5. WRITE NOTHING when the session produced no durable knowledge. That is a
+   normal outcome, not a missed one.
 
 ## What must never become a note
 
-Name the reader and the moment before writing. If the fact will already be in
-that agent's context at that moment, writing it down is duplication that can
-only drift.
+Name the reader and the moment. If the fact will ALREADY BE IN THAT AGENT'S
+CONTEXT then, DO NOT WRITE IT.
 
-Never memorise:
+NEVER memorise:
 
-- anything in a global or repository `AGENTS.md`. Those are auto-loaded, so the
-  agent already has them exactly when they apply;
-- anything in a skill that will be loaded for the task;
-- anything you just wrote into a repository file in this same session. Putting
-  a rationale in a repo's `AGENTS.md` and also in memory is one fact in two
-  places, and the repo is the authoritative one;
-- information trivially visible in the current README or source;
-- what happened in a session, command history, or mutable status.
+- anything in a global or repository `AGENTS.md`; those are auto-loaded;
+- anything in a skill that will load for the task;
+- anything you wrote into a repository this session; THE REPO IS AUTHORITATIVE;
+- anything visible in the current README or source;
+- session narrative, command history, or mutable status.
 
-Worth persisting: a durable decision and its rationale, a recurring non-obvious
-failure mode, an expensive-to-rediscover fact, a stable preference, or a
-durable pointer to a live source.
+DO persist: durable decisions and their rationale, recurring non-obvious
+failure modes, expensive-to-rediscover facts, stable preferences, durable
+pointers to live sources.
 
-Do not invent conventions. No new frontmatter keys, banners or section headings
-the project does not already use; if a note seems to need one, ask. Never stamp
-a note with an "AI-generated" banner: no project here does that, `reviewed_at`
-and Git authorship already record it, and it is wrong the moment a human reads
-the note.
+DO NOT invent conventions. No frontmatter keys, banners or headings the project
+does not already use; ASK instead. NEVER add an "AI-generated" banner.
 
 ## Note anatomy
 
@@ -84,91 +69,51 @@ One or two sentences of orientation. What this is and when it matters.
 - part_of [[Frequenz API architecture]]
 ```
 
-`title` must be unique across the project. `classification` and
-`public_candidate` belong to **shared** projects only, where they queue notes
-for an eventual public split; they carry no information in a project that is
-never shared, and `public_candidate` is explicitly not a security control.
-Follow what the project already does.
+`title` MUST be unique across the project.
 
-Observations are `- [category] fact #tag`. Categories are free-form; be
-consistent within a project. One fact per line, specific enough to be useful
-alone, because that line is what search returns.
+Observations are `- [category] fact #tag`. ONE FACT PER LINE, specific enough
+to stand alone: that line is what search returns. Categories are free-form, but
+be consistent within a project.
 
-Relations are `- relation_type [[Target Title]]`. Common types here: `part_of`,
-`relates_to`, `source`, `evidence_for`, `depends_on`, `contrasts_with`,
-`replaces`. A `[[wiki link]]` anywhere in the prose also creates an edge.
+Relations are `- relation_type [[Target Title]]`. A `[[wiki link]]` in prose
+also creates an edge. Common types: `part_of`, `relates_to`, `source`,
+`evidence_for`, `depends_on`, `contrasts_with`, `replaces`.
+
+`classification` and `public_candidate` are for SHARED projects only. Follow
+what the project already does.
 
 ## Size
 
-Basic Memory indexes a note as one `entity` row holding the **entire body**,
-plus one row per observation and relation. A search hit returns that whole body
-in its `content` field. Measured on a nine-note base: a default search returned
-31,706 characters, roughly 8k tokens, and 79% of a large note's indexed bytes
-were the single whole-body row. `page_size` caps how many results come back,
-not how big they are.
-
-So the body is a cost paid on every match, and length buys almost no
-discoverability, because observations are indexed as their own rows regardless.
-
-Keep the body to a couple of sentences of orientation. Put the durable facts in
-observations and the full explanation in the source. A body beyond roughly 200
-words means the story belongs somewhere else; a note beyond that is a signal to
-move content into a source, not to split hairs about wording.
+KEEP THE BODY SHORT: a couple of sentences of orientation, 200 words MAX.
+Durable facts go in observations, the full explanation goes in the source. A
+longer body means the content belongs somewhere else.
 
 ## Retrieval
 
-Retrieval is two steps: discover which note holds the answer, then read that
-note. Keep them separate, because the cheap way to do each is different.
+DISCOVER FIRST, THEN READ.
 
-If you have shell access, discover with the CLI, not the MCP tool:
+Discover with the CLI:
 
 ```sh
 bm tool search-notes "..." --project <project> --plain
 ```
 
-`--plain` returns the same results as the MCP call, each with its title,
-score, permalink and a snippet capped near 200 characters, but drops the note
-bodies that dominate the payload. Across four queries on a 41-note base it
-returned 2,817 to 3,185 characters where the equivalent JSON returned 28,678
-to 39,702, so roughly a tenth, and the snippets were enough to choose what to
-read next every time.
+DO NOT add `--entity-type observation` to save output; IT DOES NOT. Use it only
+when you want the decisions themselves rather than the notes holding them.
+Without shell access, use `search_notes(query="...",
+entity_types=["observation"])`.
 
-Do not stack `--entity-type observation` on top of `--plain`. Restricting to
-observations pays off only when bodies are being returned, which is what
-`--plain` already prevents; measured against the same four queries it was
-worse in all four, 4,107 to 5,137 characters against 2,817 to 3,185. Reach for
-it when you specifically want the decisions rather than the notes holding
-them, not as a saving.
+Read the chosen note FROM DISK, not through a tool. Permalink `a/b/c` in
+project `p` is `~/basic-memories/p/a/b/c/index.md`; the only exception is a
+project's root `README.md`. Use offset and limit on long notes, and `rg` over
+`~/basic-memories/` for literal search.
 
-Without shell access, the MCP tool is the fallback, and there observations do
-save: `search_notes(query="...", entity_types=["observation"])` returned
-11,728 characters instead of 31,706 on the corpus measured, a 63% saving,
-because it is the only way to drop the bodies.
+DO NOT load a subtree merely because one node matched.
 
-Then read the chosen note straight from disk rather than through a tool. The
-layout guarantees the mapping, so permalink `a/b/c` in project `p` is
-`~/basic-memories/p/a/b/c/index.md`, the sole exception being a project's root
-`README.md`. Reading the file supports offset and limit, and `rg` over
-`~/basic-memories/` does literal search, neither of which the tools expose.
-The file is also the canonical copy, so this cannot read anything stale.
+## Layout
 
-Do not recursively load a subtree merely because one node matched. Search
-directly when the question is specific; use the hierarchy when orientation or
-progressive zoom is useful.
-
-## Hierarchy
-
-The filesystem tree is the primary navigation spine.
-
-- Every knowledge node has one canonical conceptual parent, except roots.
-- A branch/index note holds a short orientation paragraph, the durable
-  high-level distinctions, and links to its children.
-- Details belong in children. Depth is unlimited.
-- Cross-cutting concepts use relations instead of duplicated prose.
-
-## File layout
-
-The tree is literal: every knowledge node is a directory holding an `index.md`.
+EVERY node is a directory holding an `index.md`, and its `permalink` EQUALS its
+conceptual path, with NO project-name prefix.
 
 ```text
 topic/
@@ -183,73 +128,59 @@ topic/
         └── opencode-<author>-ses_<id>.md
 ```
 
-Exactly two things are exempt: a project's root `README.md`, and session
-evidence under `sources/`. Each node's `permalink` equals its conceptual path,
-with no project-name prefix.
+Exactly two exemptions: a project's root `README.md`, and session evidence
+under `sources/`.
 
-### write_note cannot produce this layout
+Index notes hold orientation, the high-level distinctions, and links to
+children. Details go in children; depth is unlimited. Cross-cutting concepts
+use relations, NEVER duplicated prose.
 
-`write_note` derives the filename from the title and has no filename parameter,
-so it always writes `<Title>.md` and never `index.md`. Calling it and moving on
-is the most common way this layout gets broken, and the mistake is invisible
-until someone lists the directory.
+NEVER create a node with `write_note`. It derives the filename from the title
+and has no filename parameter, so it always writes `<Title>.md`, never
+`index.md`. WRITE `<path>/index.md` DIRECTLY with the `write` tool, frontmatter
+included. `edit_note` is fine afterwards.
 
-Create a node by writing `<path>/index.md` directly with the `write` tool,
-frontmatter included. Basic Memory's watcher indexes it within a few seconds;
-confirm with `bm status` or a search. `edit_note` works normally afterwards.
-`write_note` is only safe if you immediately move the file and fix the
-permalink by hand, which `move_note` does not do for you.
-
-### Verify before saying you are done
+BEFORE saying you are done:
 
 ```sh
 python3 ~/.config/opencode/skills/memory-curation/scripts/check-layout.py
 ```
 
-It validates filenames, permalinks, unique titles, source-note naming and
-frontmatter across every project under `~/basic-memories/`, and exits non-zero
-on a structural error. Advised keys are enforced per project: a project is held
-to a key only if it already uses it somewhere. A non-zero exit means the work
-is not finished.
+NON-ZERO EXIT MEANS NOT FINISHED.
 
 ## Live information
 
-Do not copy information that is cheap and safer to obtain from a live
-authoritative source. A note may retain a small durable concept teaching what
-the source contains, why it matters, when to consult it, and how to query it.
-
-Usually stays live: repository inventories and counts, current versions,
-current API documentation, issue and PR status, mutable deployment state.
+DO NOT copy what is cheap and safer to read live: repository inventories and
+counts, current versions, current API documentation, issue and PR status,
+mutable deployment state. Keep only a durable concept saying what the source
+holds, why it matters, when to consult it, and how to query it.
 
 ## Freshness
 
-`reviewed_at` (frontmatter, `YYYY-MM-DD`) marks when a person or agent last
-read the whole note and judged it accurate. A trailing
-`(<source>, checked YYYY-MM-DD)` on an observation marks when that claim was
-last verified. Only claims restating mutable state need a checked date. Basic
-Memory's `updated_at` is file mtime, not a freshness signal.
+- `reviewed_at` (`YYYY-MM-DD`): when the whole note was last read and judged
+  accurate.
+- `(<source>, checked YYYY-MM-DD)` on an observation: when that claim was last
+  verified. ONLY for claims restating mutable state.
+- `updated_at` is file mtime, NOT a freshness signal.
 
-A claim past its horizon, roughly three months for things that change, is a
-hint to re-check, not evidence that it is wrong. With no live source to check
-against, say so or ask Luca rather than assuming, and update the date only once
-confirmed.
+Past its horizon, roughly three months for volatile things, means RE-CHECK, not
+wrong. With no live source to check against, SAY SO OR ASK. Update the date
+ONLY once confirmed.
 
 ## Sources
 
-Attach provenance at the lowest node whose claims it supports. Do not propagate
+Attach provenance at the LOWEST node whose claims it supports. NEVER propagate
 descendant sources up into parent or index notes.
 
 Preference order: current source code, repository, commit, specification or
-authoritative docs; then other authoritative external sources; then OpenCode
-session evidence, only when the session holds unique reasoning, experiment
-results, logs or decisions preserved nowhere else. If a session merely
-discovered an external source, cite that source, not the session.
+authoritative docs; then other authoritative external sources; then opencode
+session evidence, ONLY when the session holds reasoning, experiment results,
+logs or decisions preserved nowhere else. If a session merely discovered an
+external source, CITE THAT SOURCE, not the session.
 
-Record live sources as a `## Sources` section saying what each is authoritative
-for and when to read it, as in the anatomy example above. Pin a commit SHA when
-a decision depends on a specific historical state.
+Pin a commit SHA when a decision depends on a specific historical state.
 
-Session evidence is a file of its own under the node it supports, never an
+Session evidence is a file of its own under the node it supports, NEVER an
 observation on the parent:
 
 ```text
@@ -267,19 +198,19 @@ captured_at: 2026-08-25
 availability: local-to-author
 ```
 
-Call `memory_session_context` at that point, and only then, to get the session
-ID, author and checkout rather than guessing. It is a provenance lookup, not a
+Call `memory_session_context` AT THAT POINT AND ONLY THEN, to get the session
+ID, author and checkout rather than guessing. It is a provenance lookup, NOT a
 routine step.
 
 ## Shared knowledge
 
-Assume shared knowledge may be read by other developers and agents; do not rely
-on a private local session being available to them. Session source notes need
+Assume other developers and agents will read shared projects, and that a
+private local session is UNAVAILABLE to them. Session source notes MUST carry
 enough selected evidence to stand alone. The session ID is a forensic pointer,
 not the only copy.
 
 ## Security
 
-Never infer that content is safe to publish because a note says
+NEVER infer that content is safe to publish because a note says
 `public_candidate: true`. Security boundaries are repositories and projects
 plus human review.
