@@ -117,18 +117,40 @@ move content into a source, not to split hairs about wording.
 
 ## Retrieval
 
-Observations are the progressive-disclosure layer; the body is the full story.
-Search accordingly.
+Retrieval is two steps: discover which note holds the answer, then read that
+note. Keep them separate, because the cheap way to do each is different.
 
-When you want a rule, decision or conclusion, search observations first:
+If you have shell access, discover with the CLI, not the MCP tool:
 
+```sh
+bm tool search-notes "..." --project <project> --plain
 ```
-search_notes(query="...", entity_types=["observation"])
-```
 
-On the same corpus this returned 11,728 characters instead of 31,706, a 63%
-saving, and what came back was exactly the decisions rather than the essays
-around them. Read the full note only when the fact alone is not enough.
+`--plain` returns the same results as the MCP call, each with its title,
+score, permalink and a snippet capped near 200 characters, but drops the note
+bodies that dominate the payload. Across four queries on a 41-note base it
+returned 2,817 to 3,185 characters where the equivalent JSON returned 28,678
+to 39,702, so roughly a tenth, and the snippets were enough to choose what to
+read next every time.
+
+Do not stack `--entity-type observation` on top of `--plain`. Restricting to
+observations pays off only when bodies are being returned, which is what
+`--plain` already prevents; measured against the same four queries it was
+worse in all four, 4,107 to 5,137 characters against 2,817 to 3,185. Reach for
+it when you specifically want the decisions rather than the notes holding
+them, not as a saving.
+
+Without shell access, the MCP tool is the fallback, and there observations do
+save: `search_notes(query="...", entity_types=["observation"])` returned
+11,728 characters instead of 31,706 on the corpus measured, a 63% saving,
+because it is the only way to drop the bodies.
+
+Then read the chosen note straight from disk rather than through a tool. The
+layout guarantees the mapping, so permalink `a/b/c` in project `p` is
+`~/basic-memories/p/a/b/c/index.md`, the sole exception being a project's root
+`README.md`. Reading the file supports offset and limit, and `rg` over
+`~/basic-memories/` does literal search, neither of which the tools expose.
+The file is also the canonical copy, so this cannot read anything stale.
 
 Do not recursively load a subtree merely because one node matched. Search
 directly when the question is specific; use the hierarchy when orientation or

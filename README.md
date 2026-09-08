@@ -80,12 +80,16 @@ characters. Length is therefore a cost paid on every match, and it buys almost
 no discoverability, because observations are indexed as their own rows
 whatever the body does.
 
-**Retrieval.** The same measurement gives the reading strategy. Restricting
-the same query to observations returned 11,728 characters instead of 31,706,
-and consisted of the decisions rather than the prose around them. Observations
-are the progressive-disclosure layer and the body is the full story, so the
-skill says to search observations first and read the whole note only when the
-fact alone is not enough.
+**Retrieval.** The documented workflow searches and reads through the MCP
+tools, which return note bodies in both steps. The skill splits discovery from
+reading and takes each off that path. Discovery goes through the CLI, where
+`bm tool search-notes --plain` keeps the titles, permalinks, scores and
+capped snippets while dropping the bodies: 2,817 to 3,185 characters across
+four queries on a 41-note base, against 28,678 to 39,702 for the equivalent
+JSON. Reading goes to the Markdown on disk, which is the canonical copy
+anyway, and unlike the tools supports ranged reads and `rg`. Clients without
+shell access fall back to the MCP tool restricted to observations, worth 63%
+there because it is the only way to drop the bodies.
 
 **Conventions that only exist as prose.** The tree layout, one `index.md` per
 node with a permalink matching its path, was documented in three places and
