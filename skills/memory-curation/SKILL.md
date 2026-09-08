@@ -78,12 +78,15 @@ DO NOT restate the permalink in the title. The path is already in the
 permalink, and a title tied to the path has to change whenever the note moves,
 BREAKING EVERY WIKI LINK to it.
 
-CHECK BEFORE WRITING, since a collision found later may already have links
-pointing at it:
+CHECK THE CANDIDATE BEFORE WRITING, since a collision found later may already
+have links pointing at it:
 
 ```sh
-rg --no-filename '^title: ' ~/basic-memories/<project> | sort
+bm tool search-notes "<candidate title>" --title --plain --project <project>
 ```
+
+`0 result(s)` means free. Any hit is a collision or a near-duplicate; pick a
+different title, or reconsider whether you should be updating that note.
 
 Observations are `- [category] fact #tag`. ONE FACT PER LINE, specific enough
 to stand alone: that line is what search returns. Categories are free-form, but
