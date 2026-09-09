@@ -1,6 +1,6 @@
 ---
 name: memory-curation
-description: How to write, structure, size and retrieve durable Basic Memory knowledge: note syntax, the index.md file layout, observation-first search, live-source provenance, session evidence, and deciding whether a note should exist at all. Use before writing, editing, reorganising or searching persistent memory, and when calling write_note, edit_note or search_notes.
+description: How to write, structure, size and retrieve durable Basic Memory knowledge: note syntax, the index.md file layout, observation-first search, live-source provenance, session evidence, and deciding whether a note should exist at all. Use before writing, editing or reorganising durable memory. Do not load merely to list summary-only activity notes.
 ---
 
 # Persistent memory
@@ -10,6 +10,17 @@ Policy for the Basic Memory knowledge bases under `~/basic-memories/`.
 Replaces the upstream `memory-notes` skill, kept for syntax questions at
 `~/.config/opencode/skills/memory-notes/REFERENCE.md`. Where they disagree,
 THIS ONE WINS.
+
+## Project scope
+
+`personal` and shared projects hold durable knowledge governed by this skill.
+`activity-local` is an unsynchronized operational index governed by its own
+`README.md`: one-sentence `activity` parents plus detailed `continuity`
+children. Activity and continuity are explicit exceptions to the ban on session
+narrative and mutable status below.
+
+DO NOT load this skill merely to list or read `activity` summaries. Load it
+when promoting a durable learning from continuity into canonical knowledge.
 
 ## Before writing
 
@@ -25,7 +36,7 @@ THIS ONE WINS.
 Name the reader and the moment. If the fact will ALREADY BE IN THAT AGENT'S
 CONTEXT then, DO NOT WRITE IT.
 
-NEVER memorise:
+In durable projects, NEVER memorise:
 
 - anything in a global or repository `AGENTS.md`; those are auto-loaded;
 - anything in a skill that will load for the task;
@@ -101,9 +112,11 @@ what the project already does.
 
 ## Size
 
-KEEP THE BODY SHORT: a couple of sentences of orientation, 200 words MAX.
-Durable facts go in observations, the full explanation goes in the source. A
-longer body means the content belongs somewhere else.
+KEEP A DURABLE NOTE BODY SHORT: a couple of sentences of orientation, 200 words
+MAX. Durable facts go in observations, the full explanation goes in the source.
+A longer body means the content belongs somewhere else. In `activity-local`,
+the parent is stricter at one sentence; its continuity child may be longer
+because it is never part of default recall.
 
 ## Retrieval
 
@@ -126,6 +139,10 @@ project's root `README.md`. Use offset and limit on long notes, and `rg` over
 `~/basic-memories/` for literal search.
 
 DO NOT load a subtree merely because one node matched.
+
+For recent work, list only `type: activity` notes from `activity-local` first.
+Read an exact `type: continuity` child only when its parent is relevant and the
+task needs details. Use session history after these layers, not before them.
 
 ## Layout
 
@@ -197,8 +214,9 @@ external source, CITE THAT SOURCE, not the session.
 
 Pin a commit SHA when a decision depends on a specific historical state.
 
-Session evidence is a file of its own under the node it supports, NEVER an
-observation on the parent:
+Durable session evidence is a file of its own under the node it supports, NEVER
+an observation on the parent. This is distinct from an operational
+`activity-local` checkpoint:
 
 ```text
 <concept>/sources/opencode-<author>-ses_<session-id>.md

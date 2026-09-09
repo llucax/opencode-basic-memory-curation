@@ -25,7 +25,7 @@ export default (async () => {
 		tool: {
 			memory_session_context: tool({
 				description:
-					"Provenance for the current opencode session: session ID, configured author, directory, worktree and git position. Call this only when about to record session-derived evidence in Basic Memory, so the note can cite where the evidence came from. Do not call it routinely; it tells you nothing about the task itself.",
+					"Identity for recording Basic Memory activity, continuity, or durable session evidence: current session ID, configured author, directory, worktree, and git position. Call once when creating the session record, not for recall or on every update.",
 				args: {},
 				async execute(_args, context) {
 					try {

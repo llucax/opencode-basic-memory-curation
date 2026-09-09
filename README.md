@@ -1,8 +1,8 @@
 # opencode-basic-memory-curation
 
-Curation policy and provenance helper for using
-[Basic Memory](https://github.com/basicmachines-co/basic-memory) as durable
-knowledge in [opencode](https://opencode.ai). Three independent pieces, each
+Curation policy, compact activity recall, and provenance support for using
+[Basic Memory](https://github.com/basicmachines-co/basic-memory) in
+[opencode](https://opencode.ai). The integration has independent pieces, each
 installed on purpose:
 
 - `skills/memory-curation/SKILL.md`: the policy skill. It says what deserves a
@@ -14,20 +14,23 @@ installed on purpose:
   on it; see "Replacing memory-notes" below.
 - `skills/memory-curation/scripts/check-layout.py`: a checker for the on-disk
   conventions. It validates filenames, permalinks, unique titles, source-note
-  naming and frontmatter across every project under `~/basic-memories/`, and
-  exits non-zero on a structural error. The skill tells the agent to run it
-  before calling any memory change finished.
+  naming and frontmatter across every project under `~/basic-memories/`. For
+  `activity-local`, it also validates the two-node session shape and the compact
+  parent boundary. It exits non-zero on a structural error.
 - `src/session-context.ts`: an opencode plugin registering one tool,
   `memory_session_context`, which returns the current session ID, the
   configured author, the session's directory and worktree, and cheap git
   position (root, branch, commit, origin) when the directory is a repository.
 - `snippets/AGENTS.md`: a short always-on section to paste into your own
-  `AGENTS.md`, telling the agent when to recall memory at all.
+  `AGENTS.md`, telling the agent when to recall and record activity.
+- `templates/activity-local/README.md`: the policy file for a separate,
+  unsynchronized Basic Memory project containing one-sentence activity parents
+  and opt-in continuity children.
 
 The plugin has no event hooks, injects nothing into prompts or context, makes
 no memory calls of its own, and never touches your `AGENTS.md`. It answers one
-question, only when an agent asks it, right before recording session-derived
-evidence.
+question, only when an agent asks it, before creating an activity record or
+recording durable session-derived evidence.
 
 ## Installing
 
@@ -48,6 +51,18 @@ your own copy.
 `npm install` is required, not optional: module resolution follows the
 symlink's real path, so `@opencode-ai/plugin` is resolved from this repo's own
 `node_modules`.
+
+Create and register the local activity project separately:
+
+```sh
+mkdir -p ~/basic-memories/activity-local
+cp templates/activity-local/README.md ~/basic-memories/activity-local/README.md
+bm project add activity-local ~/basic-memories/activity-local
+```
+
+Do not initialize Git or add a remote there. Keep the default project pointed
+at durable personal knowledge; every activity operation selects
+`activity-local` explicitly.
 
 ## Why this exists
 
@@ -100,9 +115,19 @@ is stated outright, and `scripts/check-layout.py` makes the conventions
 falsifiable.
 
 **Recall on every turn.** The MCP server instructs connected agents to call
-`recent_activity` when a session starts. `snippets/AGENTS.md` overrides that.
-Memory is recalled when a task needs it, and a session that writes nothing is
-a normal outcome rather than a missed one.
+`recent_activity` when a session starts, but that tool reports note changes,
+not work. `snippets/AGENTS.md` instead searches only one-sentence parents in
+`activity-local` when recent context can help. It reads a detailed continuity
+child only for a selected effort, then falls back to session history for exact
+evidence. Durable memory remains query-driven, and a session that produces no
+durable knowledge is a normal outcome rather than a missed one.
+
+**Continuity mixed with knowledge.** Resumable state is useful but mutable and
+too verbose for default recall. Keeping it in a separate, local-only project
+lets a short parent answer what each recent session is about while an exact
+child holds blockers, workers, decisions, and next steps. Worker sessions are
+aggregated under their parent manager, preventing parallel work from flooding
+the activity list.
 
 ## Replacing memory-notes
 

@@ -2,7 +2,7 @@
   "name": "opencode-basic-memory-curation",
   "private": true,
   "type": "module",
-  "description": "OpenCode session-context tool, memory-curation skill and AGENTS.md snippet for curated Basic Memory",
+  "description": "OpenCode session context, durable-memory curation, and compact activity recall for Basic Memory",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "node --test src/*.test.ts",
