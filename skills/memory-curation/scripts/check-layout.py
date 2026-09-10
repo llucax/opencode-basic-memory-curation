@@ -2,7 +2,8 @@
 """Check that Basic Memory notes follow the knowledge base layout conventions.
 
 Conventions enforced here come from the memory-curation skill, the activity-log
-README, and the structure the durable projects actually use.
+README, and the structure the durable projects actually use. This checks files,
+not Basic Memory's database; run `bm doctor --local` separately for consistency.
 
 Errors are structural and always wrong. Warnings are policy metadata that some
 projects do not use yet; fix them at least in notes you touch.

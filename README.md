@@ -16,7 +16,8 @@ installed on purpose:
   conventions. It validates filenames, permalinks, unique titles, source-note
   naming and frontmatter across every project under `~/basic-memories/`. For
   `activity-log`, it also validates the two-node session shape and the compact
-  parent boundary. It exits non-zero on a structural error.
+  parent boundary. It exits non-zero on a structural error; `bm doctor` remains
+  the separate file/database consistency check.
 - `src/session-context.ts`: an opencode plugin registering one tool,
   `memory_session_context`, which returns the current session ID, the
   configured author, the session's directory and worktree, and cheap git
@@ -96,24 +97,33 @@ characters. Length is therefore a cost paid on every match, and it buys almost
 no discoverability, because observations are indexed as their own rows
 whatever the body does.
 
-**Retrieval.** The documented workflow searches and reads through the MCP
-tools, which return note bodies in both steps. The skill splits discovery from
-reading and takes each off that path. Discovery goes through the CLI, where
+**Retrieval.** The documented MCP workflow returns note bodies during both
+search and read. The skill keeps discovery compact through the CLI, where
 `bm tool search-notes --plain` keeps the titles, permalinks, scores and
 capped snippets while dropping the bodies: 2,817 to 3,185 characters across
 four queries on a 41-note base, against 28,678 to 39,702 for the equivalent
-JSON. Reading goes to the Markdown on disk, which is the canonical copy
-anyway, and unlike the tools supports ranged reads and `rg`. Clients without
-shell access fall back to the MCP tool restricted to observations, worth 63%
-there because it is the only way to drop the bodies.
+JSON. Normal reads use `bm tool read-note` or MCP `read_note`. A ranged disk
+read or `rg` remains a read-only optimization when it materially reduces
+context; raw filesystem mutation is never allowed. Clients without shell access
+can restrict MCP search to observations, worth 63% there because it is their
+only way to drop the bodies.
 
 **Conventions that only exist as prose.** The tree layout, one `index.md` per
 node with a permalink matching its path, was documented in three places and
 still got broken repeatedly, partly because `write_note` derives the filename
-from the title and cannot produce an `index.md` at all. Prose alone did not
-hold, so the layout rules moved into this skill, the `write_note` limitation
-is stated outright, and `scripts/check-layout.py` makes the conventions
-falsifiable.
+from the title. Prose alone did not hold, so the layout rules moved into this
+skill and `scripts/check-layout.py` makes the conventions falsifiable. Creation
+now remains inside Basic Memory's accepted mutation path: `write_note` creates
+the indexed note, MCP `move_note` places it at the exact `index.md` destination,
+and `read_note` plus `bm doctor` verifies the resulting database state.
+
+**Filesystem mutation.** Markdown remains the version-controlled source data,
+but that does not make raw file writes a safe agent interface. Basic Memory's
+MCP tools and `bm tool` CLI coordinate database and storage updates, while a
+direct edit depends on asynchronous observation and can leave stale or missing
+database entities. Agents therefore use tools for every create, edit, move, and
+delete. Only Git operations and approved bulk migrations may change the files
+outside those tools, followed immediately by a full reindex and `bm doctor`.
 
 **Recall on every turn.** The MCP server instructs connected agents to call
 `recent_activity` when a session starts, but that tool reports note changes,

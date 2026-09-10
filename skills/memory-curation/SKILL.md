@@ -133,10 +133,10 @@ when you want the decisions themselves rather than the notes holding them.
 Without shell access, use `search_notes(query="...",
 entity_types=["observation"])`.
 
-Read the chosen note FROM DISK, not through a tool. Permalink `a/b/c` in
-project `p` is `~/basic-memories/p/a/b/c/index.md`; the only exception is a
-project's root `README.md`. Use offset and limit on long notes, and `rg` over
-`~/basic-memories/` for literal search.
+Read the chosen note through `bm tool read-note` or `read_note`. For a long note,
+a ranged read of the Markdown on disk is an allowed READ-ONLY optimization, and
+`rg` over `~/basic-memories/` is allowed for literal discovery. Direct disk
+access MUST NEVER create, edit, move, or delete a Basic Memory note.
 
 DO NOT load a subtree merely because one node matched.
 
@@ -169,18 +169,45 @@ Index notes hold orientation, the high-level distinctions, and links to
 children. Details go in children; depth is unlimited. Cross-cutting concepts
 use relations, NEVER duplicated prose.
 
-NEVER create a node with `write_note`. It derives the filename from the title
-and has no filename parameter, so it always writes `<Title>.md`, never
-`index.md`. WRITE `<path>/index.md` DIRECTLY with the `write` tool, frontmatter
-included. `edit_note` is fine afterwards.
+Use Basic Memory's MCP tools or `bm tool` CLI for EVERY mutation. NEVER use a
+filesystem `write`, `edit`, patch, redirect, `mv`, or `rm` under a registered
+Basic Memory project.
+
+`write_note` derives the filename from the title, but that is not a reason to
+bypass Basic Memory. Create a node safely as one accepted mutation sequence:
+
+1. Call `write_note` in the intended node directory. Include the exact stable
+   `permalink` in the content's opening frontmatter; the `metadata` argument
+   ignores `permalink`.
+2. Call MCP `move_note` with that permalink and the exact destination
+   `<path>/index.md`. For a session evidence file, use its documented
+   `sources/opencode-<author>-<session-id>.md` destination instead. The
+   permalink remains stable.
+3. Call `read_note` with the permalink and confirm its returned `file_path`.
+
+Use `edit_note` for later updates and `delete_note` for deletion. The CLI does
+not currently expose `move_note`, so an exact `index.md` creation requires MCP.
+If the necessary tool is unavailable, STOP OR DEFER; NEVER fall back to a raw
+filesystem mutation. A failed move can leave the title-derived file behind,
+which the layout checker below will reject.
+
+The only expected direct-mutation exceptions are a Git operation that changes
+the Markdown worktree, or an explicitly approved bulk migration. Immediately
+after either one, run:
+
+```sh
+bm reindex --project <project> --full
+bm doctor --local
+```
 
 BEFORE saying you are done:
 
 ```sh
 python3 ~/.config/opencode/skills/memory-curation/scripts/check-layout.py
+bm doctor --local
 ```
 
-NON-ZERO EXIT MEANS NOT FINISHED.
+NON-ZERO EXIT FROM EITHER COMMAND MEANS NOT FINISHED.
 
 ## Live information
 

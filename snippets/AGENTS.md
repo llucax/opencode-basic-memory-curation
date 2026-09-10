@@ -13,6 +13,16 @@ log.
   activity and continuity records are retained permanently.
 - `activity-log` is an operational exception to durable-memory policy. Follow
   its README and do not load `memory-curation` merely to list or update it.
+- Use Basic Memory MCP tools or `bm tool` for normal access and every note
+  mutation. Never create, edit, move, or delete files inside a registered
+  Basic Memory project through raw filesystem tools.
+- To create the required `index.md` layout, call `write_note` with the intended
+  permalink in opening frontmatter, then MCP `move_note` to the exact
+  destination, and verify it with `read_note`. If MCP is unavailable, defer
+  rather than bypassing Basic Memory.
+- Direct disk reads are allowed only as a read-only optimization. After a Git
+  operation that changes note files or an approved bulk migration, run a full
+  project reindex and `bm doctor --local`.
 - For a user-owned top-level session, call `memory_session_context` once after
   its purpose is clear and maintain its activity plus continuity nodes using
   `~/basic-memories/activity-log/README.md`. A `W:` worker does not record

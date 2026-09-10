@@ -49,9 +49,22 @@ PR, issue, and deployment state live before acting.
 ## Recording
 
 Call `memory_session_context` once after a top-level session's purpose is clear.
-Create the two `index.md` files directly because `write_note` derives filenames
-from titles. Let Basic Memory index the filesystem changes, then wait for sync
-before testing recall.
+Select `activity-log` explicitly on every Basic Memory call. Create each node
+through `write_note` in its intended directory, with the exact stable permalink
+in the content's opening frontmatter. Do not pass it through the `metadata`
+argument, which ignores `permalink`. Then use MCP `move_note` to place the
+indexed note at its final `index.md` destination and use `read_note` to confirm
+the returned `file_path`. Repeat for the parent and continuity child.
+
+Use `edit_note` for every later content or metadata update and `delete_note` for
+deletion. The CLI does not currently expose `move_note`, so creation in this
+layout requires MCP. If the required tool is unavailable, defer the record;
+never create, edit, move, or delete a file in this project through raw
+filesystem tools.
+
+A Git operation that changes Markdown, or an explicitly approved bulk
+migration, is the only direct-mutation exception. Immediately run
+`bm reindex --project activity-log --full` and `bm doctor --local` afterward.
 
 The activity parent carries `session_id`, `session_author`, `started_at`,
 `last_active_at`, `status`, `directory`, and `continuity`. Update its single
@@ -81,4 +94,5 @@ them from continuity instead of duplicating them here.
 Retain activity and continuity records permanently. Default recall still covers
 only seven days, and older records must not appear without a more specific
 historical query. Git commits and pushes are backup checkpoints, not part of
-per-session recording.
+per-session recording. Before considering a record complete, run the installed
+layout checker and `bm doctor --local`; both must pass.
