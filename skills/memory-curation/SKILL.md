@@ -14,10 +14,10 @@ THIS ONE WINS.
 ## Project scope
 
 `personal` and shared projects hold durable knowledge governed by this skill.
-`activity-local` is an unsynchronized operational index governed by its own
+`activity-log` is a private operational history governed by its own
 `README.md`: one-sentence `activity` parents plus detailed `continuity`
-children. Activity and continuity are explicit exceptions to the ban on session
-narrative and mutable status below.
+children, both retained permanently. Activity and continuity are explicit
+exceptions to the ban on session narrative and mutable status below.
 
 DO NOT load this skill merely to list or read `activity` summaries. Load it
 when promoting a durable learning from continuity into canonical knowledge.
@@ -114,7 +114,7 @@ what the project already does.
 
 KEEP A DURABLE NOTE BODY SHORT: a couple of sentences of orientation, 200 words
 MAX. Durable facts go in observations, the full explanation goes in the source.
-A longer body means the content belongs somewhere else. In `activity-local`,
+A longer body means the content belongs somewhere else. In `activity-log`,
 the parent is stricter at one sentence; its continuity child may be longer
 because it is never part of default recall.
 
@@ -140,7 +140,7 @@ project's root `README.md`. Use offset and limit on long notes, and `rg` over
 
 DO NOT load a subtree merely because one node matched.
 
-For recent work, list only `type: activity` notes from `activity-local` first.
+For recent work, list only `type: activity` notes from `activity-log` first.
 Read an exact `type: continuity` child only when its parent is relevant and the
 task needs details. Use session history after these layers, not before them.
 
@@ -216,7 +216,7 @@ Pin a commit SHA when a decision depends on a specific historical state.
 
 Durable session evidence is a file of its own under the node it supports, NEVER
 an observation on the parent. This is distinct from an operational
-`activity-local` checkpoint:
+`activity-log` checkpoint:
 
 ```text
 <concept>/sources/opencode-<author>-ses_<session-id>.md

@@ -2,18 +2,20 @@
 
 ## Persistent knowledge
 
-Basic Memory holds durable curated knowledge and a separate local activity
-index.
+Basic Memory holds durable curated knowledge and a separate private activity
+log.
 
-- For recent or ongoing work, search project `activity-local` FIRST with
+- For recent or ongoing work, search project `activity-log` FIRST with
   `note_types=["activity"]`, `after_date="7d"`, and `page_size=20`.
 - Activity bodies are one short summary sentence. Read several, but DO NOT read
   continuity children unless one relevant effort needs details.
-- `activity-local` is an operational exception to durable-memory policy. Follow
+- For historical questions, search the requested period in `activity-log`;
+  activity and continuity records are retained permanently.
+- `activity-log` is an operational exception to durable-memory policy. Follow
   its README and do not load `memory-curation` merely to list or update it.
 - For a user-owned top-level session, call `memory_session_context` once after
   its purpose is clear and maintain its activity plus continuity nodes using
-  `~/basic-memories/activity-local/README.md`. A `W:` worker does not record
+  `~/basic-memories/activity-log/README.md`. A `W:` worker does not record
   itself; its parent manager aggregates it.
 - Prefer activity over broad `history-search`; use history only for missing
   detail or exact session evidence.

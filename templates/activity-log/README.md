@@ -1,14 +1,15 @@
 ---
-title: Local OpenCode activity
+title: OpenCode activity log
 type: note
-permalink: activity-local/readme
+permalink: activity-log/readme
 ---
 
-# Local OpenCode activity
+# OpenCode activity log
 
-This local-only Basic Memory project is a compact index of recent top-level
-OpenCode sessions and their continuity. It is operational state, not durable
-knowledge, and must never be synchronized or published.
+This private Basic Memory project is a permanent compact log of top-level
+OpenCode sessions and their continuity. It is operational history, not
+canonical durable knowledge. A private Git remote may back it up, but it must
+never be public, team-shared, or synchronized through Basic Memory cloud.
 
 ## Record shape
 
@@ -29,7 +30,7 @@ the parent manager's continuity can reference workers when needed.
 
 ## Recall
 
-For recent context, search `activity-local` first with `note_types=["activity"]`,
+For recent context, search `activity-log` first with `note_types=["activity"]`,
 `after_date="7d"`, and `page_size=20`. Reading all returned activity bodies is
 safe because each is one sentence. Do not read continuity children by default.
 
@@ -37,6 +38,10 @@ Read one exact continuity child only when resuming that effort or when its
 details are needed. Use OpenCode history only when the selected activity and
 continuity notes do not contain enough information, or when exact session
 evidence is required.
+
+For historical questions, select `type: activity` records from the requested
+year or month and read their one-sentence summaries first. Read only the
+continuity children needed to add detail.
 
 Activity and continuity are routing hints. Verify repository, branch, worker,
 PR, issue, and deployment state live before acting.
@@ -62,16 +67,18 @@ when no exact time survives; never manufacture precision. The parent
 `continuity` value is the exact permalink of its child. Titles must remain
 unique across the project.
 
+When a finished session resumes, set its status back to `active`. Once it is
+finished again, keep the completed record unchanged except to correct a factual
+error; do not rewrite historical state to match the present.
+
 Durable decisions, recurring failure modes, and reusable lessons belong in a
 canonical note in `personal` or the relevant shared knowledge project. Link to
 them from continuity instead of duplicating them here.
 
-## Age
+## Retention
 
 `last_active_at` records when the work changed; it is not an accuracy review.
-Default recall covers seven days. Explicit recent-work searches may cover 30
-days. Completed or superseded records may be deleted after 30 days. Active or
-blocked records may remain for 90 days, but must not appear in default recall
-after seven days without a more specific query.
-
-OpenCode history remains the forensic record after an activity record expires.
+Retain activity and continuity records permanently. Default recall still covers
+only seven days, and older records must not appear without a more specific
+historical query. Git commits and pushes are backup checkpoints, not part of
+per-session recording.

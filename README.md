@@ -15,7 +15,7 @@ installed on purpose:
 - `skills/memory-curation/scripts/check-layout.py`: a checker for the on-disk
   conventions. It validates filenames, permalinks, unique titles, source-note
   naming and frontmatter across every project under `~/basic-memories/`. For
-  `activity-local`, it also validates the two-node session shape and the compact
+  `activity-log`, it also validates the two-node session shape and the compact
   parent boundary. It exits non-zero on a structural error.
 - `src/session-context.ts`: an opencode plugin registering one tool,
   `memory_session_context`, which returns the current session ID, the
@@ -23,9 +23,9 @@ installed on purpose:
   position (root, branch, commit, origin) when the directory is a repository.
 - `snippets/AGENTS.md`: a short always-on section to paste into your own
   `AGENTS.md`, telling the agent when to recall and record activity.
-- `templates/activity-local/README.md`: the policy file for a separate,
-  unsynchronized Basic Memory project containing one-sentence activity parents
-  and opt-in continuity children.
+- `templates/activity-log/README.md`: the policy file for a separate private
+  Basic Memory project containing one-sentence activity parents and opt-in
+  continuity children.
 
 The plugin has no event hooks, injects nothing into prompts or context, makes
 no memory calls of its own, and never touches your `AGENTS.md`. It answers one
@@ -52,17 +52,18 @@ your own copy.
 symlink's real path, so `@opencode-ai/plugin` is resolved from this repo's own
 `node_modules`.
 
-Create and register the local activity project separately:
+Create and register the private activity project separately:
 
 ```sh
-mkdir -p ~/basic-memories/activity-local
-cp templates/activity-local/README.md ~/basic-memories/activity-local/README.md
-bm project add activity-local ~/basic-memories/activity-local
+mkdir -p ~/basic-memories/activity-log
+cp templates/activity-log/README.md ~/basic-memories/activity-log/README.md
+bm project add activity-log ~/basic-memories/activity-log
 ```
 
-Do not initialize Git or add a remote there. Keep the default project pointed
-at durable personal knowledge; every activity operation selects
-`activity-local` explicitly.
+Keep the default project pointed at durable personal knowledge; every activity
+operation selects `activity-log` explicitly. A private Git remote may back up
+the project, but it must never be public, team-shared, or synchronized through
+Basic Memory cloud.
 
 ## Why this exists
 
@@ -117,15 +118,16 @@ falsifiable.
 **Recall on every turn.** The MCP server instructs connected agents to call
 `recent_activity` when a session starts, but that tool reports note changes,
 not work. `snippets/AGENTS.md` instead searches only one-sentence parents in
-`activity-local` when recent context can help. It reads a detailed continuity
+`activity-log` when recent context can help. It reads a detailed continuity
 child only for a selected effort, then falls back to session history for exact
 evidence. Durable memory remains query-driven, and a session that produces no
 durable knowledge is a normal outcome rather than a missed one.
 
 **Continuity mixed with knowledge.** Resumable state is useful but mutable and
-too verbose for default recall. Keeping it in a separate, local-only project
-lets a short parent answer what each recent session is about while an exact
-child holds blockers, workers, decisions, and next steps. Worker sessions are
+too verbose for default recall. Keeping it in a separate private project lets a
+short parent answer what each session is about while an exact child holds
+blockers, workers, decisions, and next steps. Both are retained as permanent
+history, but only recent parents enter default recall. Worker sessions are
 aggregated under their parent manager, preventing parallel work from flooding
 the activity list.
 

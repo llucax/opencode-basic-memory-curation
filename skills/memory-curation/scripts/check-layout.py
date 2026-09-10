@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Check that Basic Memory notes follow the knowledge base layout conventions.
 
-Conventions enforced here come from the memory-curation skill, the
-activity-local README, and the structure the durable projects actually use.
+Conventions enforced here come from the memory-curation skill, the activity-log
+README, and the structure the durable projects actually use.
 
 Errors are structural and always wrong. Warnings are policy metadata that some
 projects do not use yet; fix them at least in notes you touch.
@@ -47,6 +47,7 @@ ACTIVITY_REQUIRED = (
     "directory",
 )
 ACTIVITY_STATUSES = {"active", "blocked", "complete", "superseded"}
+ACTIVITY_PROJECTS = {"activity-log", "activity-local"}
 
 errors: list[str] = []
 warnings: list[str] = []
@@ -101,7 +102,7 @@ def check_activity_note(path: Path, rel: Path, meta: dict[str, str]) -> None:
     continuity_match = ACTIVITY_CONTINUITY.fullmatch(relative)
     match = parent_match or continuity_match
     if match is None:
-        error(rel, "activity-local notes must use the documented session paths")
+        error(rel, "activity notes must use the documented session paths")
         return
 
     expected_type = "activity" if parent_match else "continuity"
@@ -208,7 +209,7 @@ def check_project(root: Path) -> None:
         if in_sources and meta.get("type") != "source":
             error(rel, "notes under sources/ must set `type: source`")
 
-        if root.name == "activity-local":
+        if root.name in ACTIVITY_PROJECTS:
             check_activity_note(root / rel, rel, meta)
 
         title = meta.get("title", "")
