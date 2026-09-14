@@ -3,7 +3,9 @@
 
 Conventions enforced here come from the memory-curation skill, the activity-log
 README, and the structure the durable projects actually use. This checks files,
-not Basic Memory's database; run `bm doctor --local` separately for consistency.
+not Basic Memory's database. `bm doctor --local` does not check that either:
+it only self-tests the pipeline through its own throwaway project. Verify a
+specific note's database state with `bm tool read-note --json --frontmatter`.
 
 Errors are structural and always wrong. Warnings are policy metadata that some
 projects do not use yet; fix them at least in notes you touch.
@@ -214,6 +216,13 @@ def check_project(root: Path) -> None:
             check_activity_note(root / rel, rel, meta)
 
         title = meta.get("title", "")
+        if title == "index":
+            error(
+                rel,
+                "title is the literal string `index`, the write-note + "
+                "edit-note recipe for landing this file was left "
+                "half-finished (see skills/memory-curation/references/editing.md)",
+            )
         if title:
             if title in titles:
                 error(rel, f"title `{title}` is already used by {titles[title]}")
