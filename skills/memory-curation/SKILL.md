@@ -130,10 +130,8 @@ bm tool search-notes "..." --project <project> --plain
 
 DO NOT add `--entity-type observation` to save output; IT DOES NOT. Use it only
 when you want the decisions themselves rather than the notes holding them.
-Without shell access, use `search_notes(query="...",
-entity_types=["observation"])`.
 
-Read the chosen note through `bm tool read-note` or `read_note`. For a long note,
+Read the chosen note through `bm tool read-note`. For a long note,
 a ranged read of the Markdown on disk is an allowed READ-ONLY optimization, and
 `rg` over `~/basic-memories/` is allowed for literal discovery. Direct disk
 access MUST NEVER create, edit, move, or delete a Basic Memory note.
@@ -169,45 +167,55 @@ Index notes hold orientation, the high-level distinctions, and links to
 children. Details go in children; depth is unlimited. Cross-cutting concepts
 use relations, NEVER duplicated prose.
 
-Use Basic Memory's MCP tools or `bm tool` CLI for EVERY mutation. NEVER use a
-filesystem `write`, `edit`, patch, redirect, `mv`, or `rm` under a registered
-Basic Memory project.
+Use the `bm tool` CLI for EVERY mutation. NEVER use a filesystem `write`,
+`edit`, patch, redirect, `mv`, or `rm` under a registered Basic Memory project.
 
-`write_note` derives the filename from the title, but that is not a reason to
-bypass Basic Memory. Create a node safely as one accepted mutation sequence:
+`bm tool write-note` derives the filename from `--title`, but that is not a
+reason to bypass Basic Memory. Create a node safely with two commands:
 
-1. Call `write_note` in the intended node directory. Include the exact stable
-   `permalink` in the content's opening frontmatter; the `metadata` argument
-   ignores `permalink`.
-2. Call MCP `move_note` with that permalink and the exact destination
-   `<path>/index.md`. For a session evidence file, use its documented
-   `sources/opencode-<author>-<session-id>.md` destination instead. The
-   permalink remains stable.
-3. Call `read_note` with the permalink and confirm its returned `file_path`.
+1. Run `bm tool write-note --folder "<path>" --title index` with the exact
+   stable `permalink: <path>` in the content's opening frontmatter;
+   `write-note` has no `--metadata` flag, so the permalink MUST be set there,
+   not passed any other way. Because the filename derives from `--title`,
+   this lands the file at exactly `<path>/index.md`. For a session evidence
+   file, use its documented
+   `sources/opencode-<author>-<session-id>.md` destination and its real title
+   directly instead; only the `index.md` case needs the fixup below.
+2. Run `bm tool edit-note "<path>" --operation find_replace --find-text "title:
+   index" --content "title: <real title>"` to fix the DB title. `find_replace`
+   reaches into frontmatter, which is what makes this work; it is undocumented
+   and fails loudly (`--expected-replacements` defaults to 1) if `title:
+   index` is ambiguous.
+3. Run `bm tool read-note "<path>" --json --frontmatter` and confirm the
+   returned `file_path` ends in `index.md`.
 
-Use `edit_note` for later updates and `delete_note` for deletion. The CLI does
-not currently expose `move_note`, so an exact `index.md` creation requires MCP.
-If the necessary tool is unavailable, STOP OR DEFER; NEVER fall back to a raw
-filesystem mutation. A failed move can leave the title-derived file behind,
-which the layout checker below will reject.
+Use `bm tool edit-note` for later updates and `bm tool delete-note` for
+deletion. If the CLI is genuinely unavailable, STOP OR DEFER; NEVER fall back
+to a raw filesystem mutation.
 
 The only expected direct-mutation exceptions are a Git operation that changes
 the Markdown worktree, or an explicitly approved bulk migration. Immediately
-after either one, run:
+after either one, reindex the changed project:
 
 ```sh
 bm reindex --project <project> --full
-bm doctor --local
 ```
 
-BEFORE saying you are done:
+`bm doctor --local` is a general pipeline health check, not a check of that
+project: it creates its own throwaway project, round-trips a file through
+only that, and confirms the install works, not that the changed project is
+correctly indexed. It is still worth running once after something unusual,
+such as a version upgrade, just not as project-specific verification.
+
+BEFORE saying you are done, run the installed layout checker, and confirm
+each note you touched with `bm tool read-note --json --frontmatter`:
 
 ```sh
 python3 ~/.config/opencode/skills/memory-curation/scripts/check-layout.py
-bm doctor --local
 ```
 
-NON-ZERO EXIT FROM EITHER COMMAND MEANS NOT FINISHED.
+NON-ZERO EXIT MEANS NOT FINISHED. Do not substitute `bm doctor --local` for
+either check; it never looks at the project you are working in.
 
 ## Live information
 
