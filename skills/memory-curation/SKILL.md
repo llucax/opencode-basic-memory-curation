@@ -10,9 +10,12 @@ Policy for the Basic Memory knowledge bases under `~/basic-memories/`, and the
 the exact same package as the CLI, so the two cannot drift in version, though
 MCP tool names still differ from CLI flag names (see "Always true" below).
 
-Replaces the upstream `memory-notes` skill, kept for syntax questions at
-`~/.config/opencode/skills/memory-notes/REFERENCE.md`. Where they disagree,
-THIS ONE WINS.
+Replaces the upstream `memory-notes` skill, kept for NOTE SYNTAX ONLY at
+`~/.config/opencode/skills/memory-notes/REFERENCE.md`: frontmatter,
+observations, relations, wiki links. Its command examples are MCP-era and
+several have no CLI equivalent (`move_note` does not exist anywhere in `bm`),
+so take commands from `references/` here, never from that file. Where they
+disagree, THIS ONE WINS.
 
 ## Command reference
 
@@ -218,6 +221,9 @@ each note you touched with `bm tool read-note --json --frontmatter`:
 ```sh
 python3 ~/.config/opencode/skills/memory-curation/scripts/check-layout.py
 ```
+
+(That path resolves into the installed plugin clone; running it is fine,
+editing it is not.)
 
 NON-ZERO EXIT MEANS NOT FINISHED. `bm doctor --local` does not substitute for
 either check: it never looks at the project you are working in, only at its

@@ -24,12 +24,11 @@ from pathlib import Path
 # Scalar frontmatter keys every knowledge node must carry.
 REQUIRED = ("title", "type", "permalink")
 # Policy metadata that only some projects use. `classification` and
-# `public_candidate` are for SHARED projects, where they queue notes for the
-# eventual public split (02-frequenz-migration.md section 2,
-# 03-team-sharing-and-public-split.md). They mean nothing in a project that is
-# never shared, so they are not required globally: a project is expected to
-# carry a key only if it already uses it somewhere. That keeps frequenz-internal
-# at full coverage without pushing dead metadata into personal.
+# `public_candidate` are for SHARED projects, where they queue notes for an
+# eventual public split. They mean nothing in a project that is never shared,
+# so they are not required globally: a project is expected to carry a key
+# only if it already uses it somewhere. That keeps frequenz-internal at full
+# coverage without pushing dead metadata into personal.
 ADVISED = ("classification", "public_candidate", "reviewed_at")
 
 SOURCE_NAME = re.compile(r"^opencode-[A-Za-z0-9._-]+-ses_[A-Za-z0-9]+$")
