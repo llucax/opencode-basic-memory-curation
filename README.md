@@ -48,8 +48,16 @@ ln -sfn "$PWD/skills/memory-curation" ~/.config/opencode/skills/memory-curation
 ```
 
 Then paste `snippets/AGENTS.md` into your own `AGENTS.md` by hand, and restart
-opencode. The skill can be copied instead of symlinked if you prefer to edit
-your own copy.
+opencode.
+
+This clone is install-only. The symlinks above make
+`~/.config/opencode/skills/memory-curation` and the plugin path resolve
+directly into it, so an edit made through either config path edits this
+clone's working tree, not a copy of it. Do not develop against this checkout:
+make a separate clone for changes, commit and push there, then `git pull`
+this one to pick them up. Editing the installed clone directly leaves
+uncommitted changes that a later `git pull` or `git checkout` here can
+silently discard.
 
 `npm install` is required, not optional: module resolution follows the
 symlink's real path, so `@opencode-ai/plugin` is resolved from this repo's own
