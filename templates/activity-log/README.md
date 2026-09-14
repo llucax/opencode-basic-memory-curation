@@ -30,41 +30,64 @@ the parent manager's continuity can reference workers when needed.
 
 ## Recall
 
-For recent context, search `activity-log` first with `note_types=["activity"]`,
-`after_date="7d"`, and `page_size=20`. Reading all returned activity bodies is
-safe because each is one sentence. Do not read continuity children by default.
+For recent context, search `activity-log` first:
+
+```sh
+bm tool search-notes --project activity-log --type activity \
+  --after_date 7d --page-size 20 --json \
+  | jq -r '.results[] | "\(.permalink)  \(.title)"'
+```
+
+Reading all returned activity bodies is safe because each is one sentence. Do
+not read continuity children by default.
 
 Read one exact continuity child only when resuming that effort or when its
-details are needed. Use OpenCode history only when the selected activity and
-continuity notes do not contain enough information, or when exact session
-evidence is required.
+details are needed:
+
+```sh
+bm tool read-note --project activity-log "<permalink>/continuity"
+```
+
+Use OpenCode history only when the selected activity and continuity notes do
+not contain enough information, or when exact session evidence is required.
 
 For historical questions, select `type: activity` records from the requested
-year or month and read their one-sentence summaries first. Read only the
-continuity children needed to add detail.
+year or month, widening or dropping `--after_date` to cover that range, and
+read their one-sentence summaries first. Read only the continuity children
+needed to add detail.
 
 Activity and continuity are routing hints. Verify repository, branch, worker,
 PR, issue, and deployment state live before acting.
 
 ## Recording
 
-Call `memory_session_context` once after a top-level session's purpose is clear.
-Select `activity-log` explicitly on every Basic Memory call. Create each node
-through `write_note` in its intended directory, with the exact stable permalink
-in the content's opening frontmatter. Do not pass it through the `metadata`
-argument, which ignores `permalink`. Then use MCP `move_note` to place the
-indexed note at its final `index.md` destination and use `read_note` to confirm
-the returned `file_path`. Repeat for the parent and continuity child.
+Call `memory_session_context` once after a top-level session's purpose is
+clear. Select `activity-log` explicitly on every Basic Memory call. Create
+each node with two `bm tool` commands. First `write-note --folder
+"sessions/YYYY/MM/<session-id>" --title index --type activity` (or
+`.../continuity --type continuity` for the child), with the exact stable
+permalink in the content's opening frontmatter; `write-note` has no
+`--metadata` flag, so the permalink MUST be set there, not passed any other
+way. Because the filename derives from `--title`, this lands
+the file at exactly `.../index.md`. Then `edit-note --operation find_replace
+--find-text "title: index" --content "title: <real title>"` to fix the DB
+title; `find_replace` can do this because it reaches into frontmatter as well
+as the body. Verify with `bm tool read-note --json --frontmatter` and confirm
+`file_path` ends in `index.md`. Repeat for the parent and continuity child.
+See the `memory-curation` skill's `references/recording.md` for the full
+commands.
 
-Use `edit_note` for every later content or metadata update and `delete_note` for
-deletion. The CLI does not currently expose `move_note`, so creation in this
-layout requires MCP. If the required tool is unavailable, defer the record;
-never create, edit, move, or delete a file in this project through raw
-filesystem tools.
+Use `bm tool edit-note` for every later content or metadata update and `bm
+tool delete-note` for deletion. Never create, edit, move, or delete a file in
+this project through raw filesystem tools; if `bm` is genuinely unavailable,
+defer the record instead.
 
 A Git operation that changes Markdown, or an explicitly approved bulk
 migration, is the only direct-mutation exception. Immediately run
-`bm reindex --project activity-log --full` and `bm doctor --local` afterward.
+`bm reindex --project activity-log --full` to reindex. `bm doctor --local`
+is a general pipeline health check, not a check of this project: it creates
+its own throwaway project and never looks at `activity-log`; use
+`bm tool read-note --json --frontmatter` on the changed records instead.
 
 The activity parent carries `session_id`, `session_author`, `started_at`,
 `last_active_at`, `status`, `directory`, and `continuity`. Update its single
@@ -95,4 +118,8 @@ Retain activity and continuity records permanently. Default recall still covers
 only seven days, and older records must not appear without a more specific
 historical query. Git commits and pushes are backup checkpoints, not part of
 per-session recording. Before considering a record complete, run the installed
-layout checker and `bm doctor --local`; both must pass.
+layout checker and confirm the record itself with `bm tool read-note --project
+activity-log <permalink> --json --frontmatter`, checking that `file_path`
+ends in `index.md`; both must pass. Do not substitute `bm doctor --local`
+for this: it creates its own throwaway project, round-trips a file through
+only that, and never looks at `activity-log`.
