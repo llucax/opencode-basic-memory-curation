@@ -1,15 +1,50 @@
 ---
 name: memory-curation
-description: How to write, structure, size and retrieve durable Basic Memory knowledge: note syntax, the index.md file layout, observation-first search, live-source provenance, session evidence, and deciding whether a note should exist at all. Use before writing, editing or reorganising durable memory. Do not load merely to list summary-only activity notes.
+description: How to write, structure, size and retrieve durable Basic Memory knowledge, and how to do all of it through the `bm` CLI (`bm tool ...` plus plain `bm` subcommands) instead of MCP tools. Covers note syntax, the index.md file layout, observation-first search, live-source provenance, session evidence, and deciding whether a note should exist at all. Use before writing, editing, searching, or reorganising Basic Memory content, beyond the recall command and continuity read already covered in AGENTS.md. Do not load merely to list summary-only activity notes.
 ---
 
 # Persistent memory
 
-Policy for the Basic Memory knowledge bases under `~/basic-memories/`.
+Policy for the Basic Memory knowledge bases under `~/basic-memories/`, and the
+`bm` CLI mechanics for carrying it out. Installed `bm` is 0.23.2; `bm mcp` runs
+the exact same package as the CLI, so the two cannot drift in version, though
+MCP tool names still differ from CLI flag names (see "Always true" below).
 
 Replaces the upstream `memory-notes` skill, kept for syntax questions at
 `~/.config/opencode/skills/memory-notes/REFERENCE.md`. Where they disagree,
 THIS ONE WINS.
+
+## Command reference
+
+The sections below are policy. Detailed CLI mechanics live in `references/`
+and are loaded only when needed:
+
+- Searching and filtering notes, the `recent-activity` name collision, and
+  `build-context` relation traversal: `references/searching.md`.
+- Writing, editing, and deleting notes, including the two-command recipe for
+  landing a file at an exact `index.md`: `references/editing.md`.
+- Recording or updating an `activity-log` session (activity parent plus
+  continuity child): `references/recording.md`.
+- Project and index maintenance, `bm reindex`, `bm doctor`, and the
+  `schema-*` commands: `references/maintenance.md`.
+
+## Always true
+
+- `bm tool` exposes exactly 12 subcommands: `write-note`, `read-note`,
+  `delete-note`, `edit-note`, `build-context`, `recent-activity`,
+  `search-notes`, `list-projects`, `list-workspaces`, `schema-validate`,
+  `schema-infer`, `schema-diff`. There is no `move-note` anywhere in the CLI.
+- `--json` is emitted automatically whenever stdout is not a TTY, so piping to
+  `jq` needs no extra flag; interactively you get a Rich table or Markdown
+  view instead, or pass `--plain` for undecorated text either way.
+- Flag names differ from the MCP parameter names you may remember: `--type`
+  is `note_types`, `--entity-type` is `entity_types`, `--folder` is
+  `directory`, and `--tag` (singular, search only) is a different flag from
+  `--tags` (write only). Upstream issue #977 plans renames with deprecation
+  aliases for v1.0, which is a reason to keep CLI usage centralized in
+  `references/` rather than repeated ad hoc across other files.
+- Discover before you read: `bm tool search-notes` first, `bm tool read-note`
+  on the result you picked, not the other way around.
 
 ## Project scope
 
@@ -20,7 +55,8 @@ children, both retained permanently. Activity and continuity are explicit
 exceptions to the ban on session narrative and mutable status below.
 
 DO NOT load this skill merely to list or read `activity` summaries. Load it
-when promoting a durable learning from continuity into canonical knowledge.
+when promoting a durable learning from continuity into canonical knowledge, or
+when the task is a CLI mechanic covered in `references/`.
 
 ## Before writing
 
@@ -120,16 +156,10 @@ because it is never part of default recall.
 
 ## Retrieval
 
-DISCOVER FIRST, THEN READ.
-
-Discover with the CLI:
-
-```sh
-bm tool search-notes "..." --project <project> --plain
-```
-
-DO NOT add `--entity-type observation` to save output; IT DOES NOT. Use it only
-when you want the decisions themselves rather than the notes holding them.
+DISCOVER FIRST, THEN READ, using `bm tool search-notes --project <project>
+--plain` (see `references/searching.md` for the full flag set). DO NOT add
+`--entity-type observation` to save output; IT DOES NOT. Use it only when you
+want the decisions themselves rather than the notes holding them.
 
 Read the chosen note through `bm tool read-note`. For a long note,
 a ranged read of the Markdown on disk is an allowed READ-ONLY optimization, and
@@ -171,41 +201,16 @@ Use the `bm tool` CLI for EVERY mutation. NEVER use a filesystem `write`,
 `edit`, patch, redirect, `mv`, or `rm` under a registered Basic Memory project.
 
 `bm tool write-note` derives the filename from `--title`, but that is not a
-reason to bypass Basic Memory. Create a node safely with two commands:
-
-1. Run `bm tool write-note --folder "<path>" --title index` with the exact
-   stable `permalink: <path>` in the content's opening frontmatter;
-   `write-note` has no `--metadata` flag, so the permalink MUST be set there,
-   not passed any other way. Because the filename derives from `--title`,
-   this lands the file at exactly `<path>/index.md`. For a session evidence
-   file, use its documented
-   `sources/opencode-<author>-<session-id>.md` destination and its real title
-   directly instead; only the `index.md` case needs the fixup below.
-2. Run `bm tool edit-note "<path>" --operation find_replace --find-text "title:
-   index" --content "title: <real title>"` to fix the DB title. `find_replace`
-   reaches into frontmatter, which is what makes this work; it is undocumented
-   and fails loudly (`--expected-replacements` defaults to 1) if `title:
-   index` is ambiguous.
-3. Run `bm tool read-note "<path>" --json --frontmatter` and confirm the
-   returned `file_path` ends in `index.md`.
-
-Use `bm tool edit-note` for later updates and `bm tool delete-note` for
-deletion. If the CLI is genuinely unavailable, STOP OR DEFER; NEVER fall back
-to a raw filesystem mutation.
+reason to bypass Basic Memory. Landing a node at its exact `index.md` needs a
+two-command recipe, `write-note --title index` then `edit-note find_replace`
+to fix the DB title; see `references/editing.md` for the full recipe, its
+justification, and the verification command. If the CLI is genuinely
+unavailable, STOP OR DEFER; NEVER fall back to a raw filesystem mutation.
 
 The only expected direct-mutation exceptions are a Git operation that changes
 the Markdown worktree, or an explicitly approved bulk migration. Immediately
-after either one, reindex the changed project:
-
-```sh
-bm reindex --project <project> --full
-```
-
-`bm doctor --local` is a general pipeline health check, not a check of that
-project: it creates its own throwaway project, round-trips a file through
-only that, and confirms the install works, not that the changed project is
-correctly indexed. It is still worth running once after something unusual,
-such as a version upgrade, just not as project-specific verification.
+after either one, reindex the changed project with `bm reindex --project
+<project> --full` (see `references/maintenance.md`).
 
 BEFORE saying you are done, run the installed layout checker, and confirm
 each note you touched with `bm tool read-note --json --frontmatter`:
@@ -214,8 +219,9 @@ each note you touched with `bm tool read-note --json --frontmatter`:
 python3 ~/.config/opencode/skills/memory-curation/scripts/check-layout.py
 ```
 
-NON-ZERO EXIT MEANS NOT FINISHED. Do not substitute `bm doctor --local` for
-either check; it never looks at the project you are working in.
+NON-ZERO EXIT MEANS NOT FINISHED. `bm doctor --local` does not substitute for
+either check: it never looks at the project you are working in, only at its
+own throwaway project (see `references/maintenance.md`).
 
 ## Live information
 
@@ -263,7 +269,7 @@ type: source
 permalink: <concept>/sources/opencode-<author>-ses_<session-id>
 source_type: opencode-session
 session_id: ses_...
-session_author: llucax
+session_author: <author>
 captured_at: 2026-08-25
 availability: local-to-author
 ```
