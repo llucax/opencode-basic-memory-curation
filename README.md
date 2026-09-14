@@ -16,8 +16,10 @@ installed on purpose:
   conventions. It validates filenames, permalinks, unique titles, source-note
   naming and frontmatter across every project under `~/basic-memories/`. For
   `activity-log`, it also validates the two-node session shape and the compact
-  parent boundary. It exits non-zero on a structural error; `bm doctor` remains
-  the separate file/database consistency check.
+  parent boundary. It exits non-zero on a structural error. Verify database
+  consistency for a specific note with `bm tool read-note --json
+  --frontmatter`; `bm doctor` only self-tests the pipeline through its own
+  throwaway project and never looks at the project you changed.
 - `src/session-context.ts`: an opencode plugin registering one tool,
   `memory_session_context`, which returns the current session ID, the
   configured author, the session's directory and worktree, and cheap git
@@ -97,33 +99,35 @@ characters. Length is therefore a cost paid on every match, and it buys almost
 no discoverability, because observations are indexed as their own rows
 whatever the body does.
 
-**Retrieval.** The documented MCP workflow returns note bodies during both
-search and read. The skill keeps discovery compact through the CLI, where
-`bm tool search-notes --plain` keeps the titles, permalinks, scores and
-capped snippets while dropping the bodies: 2,817 to 3,185 characters across
-four queries on a 41-note base, against 28,678 to 39,702 for the equivalent
-JSON. Normal reads use `bm tool read-note` or MCP `read_note`. A ranged disk
-read or `rg` remains a read-only optimization when it materially reduces
-context; raw filesystem mutation is never allowed. Clients without shell access
-can restrict MCP search to observations, worth 63% there because it is their
-only way to drop the bodies.
+**Retrieval.** Basic Memory's documented MCP workflow returns note bodies
+during both search and read. The skill keeps discovery compact through the
+CLI instead, where `bm tool search-notes --plain` keeps the titles,
+permalinks, scores and capped snippets while dropping the bodies: 2,817 to
+3,185 characters across four queries on a 41-note base, against 28,678 to
+39,702 for the equivalent JSON. Normal reads use `bm tool read-note`. A ranged
+disk read or `rg` remains a read-only optimization when it materially reduces
+context; raw filesystem mutation is never allowed.
 
 **Conventions that only exist as prose.** The tree layout, one `index.md` per
 node with a permalink matching its path, was documented in three places and
-still got broken repeatedly, partly because `write_note` derives the filename
+still got broken repeatedly, partly because `write-note` derives the filename
 from the title. Prose alone did not hold, so the layout rules moved into this
 skill and `scripts/check-layout.py` makes the conventions falsifiable. Creation
-now remains inside Basic Memory's accepted mutation path: `write_note` creates
-the indexed note, MCP `move_note` places it at the exact `index.md` destination,
-and `read_note` plus `bm doctor` verifies the resulting database state.
+now remains inside Basic Memory's accepted mutation path: `bm tool write-note
+--title index` creates the indexed note directly at its `index.md`
+destination, `edit-note --operation find_replace` fixes the database title
+afterward, and `read-note --json --frontmatter` verifies the resulting state
+(see `skills/memory-curation/references/editing.md`).
 
 **Filesystem mutation.** Markdown remains the version-controlled source data,
 but that does not make raw file writes a safe agent interface. Basic Memory's
-MCP tools and `bm tool` CLI coordinate database and storage updates, while a
-direct edit depends on asynchronous observation and can leave stale or missing
-database entities. Agents therefore use tools for every create, edit, move, and
+`bm tool` CLI coordinates database and storage updates, while a direct edit
+depends on asynchronous observation and can leave stale or missing database
+entities. Agents therefore use the CLI for every create, edit, move, and
 delete. Only Git operations and approved bulk migrations may change the files
-outside those tools, followed immediately by a full reindex and `bm doctor`.
+outside it, followed immediately by a full reindex; `bm doctor --local` does
+not verify a specific project's state, so it adds nothing here, though it is
+still worth running once after something unusual, such as a version upgrade.
 
 **Recall on every turn.** The MCP server instructs connected agents to call
 `recent_activity` when a session starts, but that tool reports note changes,
