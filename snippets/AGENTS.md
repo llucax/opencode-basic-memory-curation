@@ -23,10 +23,13 @@ log.
 - Direct disk reads are allowed only as a read-only optimization. After a Git
   operation that changes note files or an approved bulk migration, run a full
   project reindex with `bm reindex --project <project> --full`.
-- For a user-owned top-level session, call `memory_session_context` once after
-  its purpose is clear and maintain its activity plus continuity nodes using
-  `~/basic-memories/activity-log/README.md`. A `W:` worker does not record
-  itself; its parent manager aggregates it.
+- Record a user-owned top-level session once, when its work is done: call
+  `memory_session_context`, then create its activity and continuity nodes in a
+  single bash call with no read-backs, following
+  `~/basic-memories/activity-log/README.md`. Trivial sessions record nothing.
+  Manager sessions record early and update their continuity on each material
+  change. A `W:` worker does not record itself; its parent manager aggregates
+  it.
 - Prefer activity over broad `history-search`; use history only for missing
   detail or exact session evidence.
 - Do not call generic `recent_activity` at startup; it reports memory changes,

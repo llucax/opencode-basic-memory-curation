@@ -215,8 +215,10 @@ the Markdown worktree, or an explicitly approved bulk migration. Immediately
 after either one, reindex the changed project with `bm reindex --project
 <project> --full` (see `references/maintenance.md`).
 
-BEFORE saying you are done, run the installed layout checker, and confirm
-each note you touched with `bm tool read-note --json --frontmatter`:
+BEFORE saying you are done with durable notes, run the installed layout
+checker, and confirm each note you touched with `bm tool read-note --json
+--frontmatter`. `activity-log` records are the exception: they are checked
+periodically, not per session (see `references/recording.md`).
 
 ```sh
 python3 ~/.config/opencode/skills/memory-curation/scripts/check-layout.py

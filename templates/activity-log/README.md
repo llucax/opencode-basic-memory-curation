@@ -61,21 +61,32 @@ PR, issue, and deployment state live before acting.
 
 ## Recording
 
-Call `memory_session_context` once after a top-level session's purpose is
-clear. Select `activity-log` explicitly on every Basic Memory call. Create
-each node with two `bm tool` commands. First `write-note --folder
-"sessions/YYYY/MM/<session-id>" --title index --type activity` (or
-`.../continuity --type continuity` for the child), with the exact stable
-permalink in the content's opening frontmatter; `write-note` has no
-`--metadata` flag, so the permalink MUST be set there, not passed any other
-way. Because the filename derives from `--title`, this lands
+Record a session once, when its work is done, not as it goes. Call
+`memory_session_context` for its identity, then create both nodes in a single
+bash call, with no read-backs and no layout check. Each node takes two `bm
+tool` commands. First `write-note --folder "sessions/YYYY/MM/<session-id>"
+--title index --type activity` (or `.../continuity --type continuity` for the
+child), with the exact stable permalink in the content's opening frontmatter;
+`write-note` has no `--metadata` flag, so the permalink MUST be set there, not
+passed any other way. Because the filename derives from `--title`, this lands
 the file at exactly `.../index.md`. Then `edit-note --operation find_replace
 --find-text "title: index" --content "title: <real title>"` to fix the DB
 title; `find_replace` can do this because it reaches into frontmatter as well
-as the body. Verify with `bm tool read-note --json --frontmatter` and confirm
-`file_path` ends in `index.md`. Repeat for the parent and continuity child.
-See the `memory-curation` skill's `references/recording.md` for the full
-commands.
+as the body. Select `activity-log` explicitly on every Basic Memory call. See
+the `memory-curation` skill's `references/recording.md` for the full commands.
+
+Set `status` to the state the session leaves its work in: `complete`,
+`blocked` when it waits on something, or `active` when more work is planned.
+Do not update `last_active_at` or `status` while the session is running.
+
+Trivial sessions record nothing: smoke tests, one-off questions, and read-only
+lookups that leave nothing to resume.
+
+Manager sessions are the exception. Their continuity is their compaction
+recovery point and holds running state such as the notifications-sweep tally,
+so they create both nodes once their purpose is clear and update the
+continuity on each material change, batching the edits for one change into a
+single bash call, still with no read-backs.
 
 Use `bm tool edit-note` for every later content or metadata update and `bm
 tool delete-note` for deletion. Never create, edit, move, or delete a file in
@@ -103,9 +114,11 @@ when no exact time survives; never manufacture precision. The parent
 `continuity` value is the exact permalink of its child. Titles must remain
 unique across the project.
 
-When a finished session resumes, set its status back to `active`. Once it is
-finished again, keep the completed record unchanged except to correct a factual
-error; do not rewrite historical state to match the present.
+When a finished session resumes and does more work, update its records once
+more when that work is done, in a single bash call: `last_active_at`, `status`
+and the continuity. Once it is finished again, keep the completed record
+unchanged except to correct a factual error; do not rewrite historical state
+to match the present.
 
 Durable decisions, recurring failure modes, and reusable lessons belong in a
 canonical note in `personal` or the relevant shared knowledge project. Link to
@@ -117,9 +130,11 @@ them from continuity instead of duplicating them here.
 Retain activity and continuity records permanently. Default recall still covers
 only seven days, and older records must not appear without a more specific
 historical query. Git commits and pushes are backup checkpoints, not part of
-per-session recording. Before considering a record complete, run the installed
-layout checker and confirm the record itself with `bm tool read-note --project
-activity-log <permalink> --json --frontmatter`, checking that `file_path`
-ends in `index.md`; both must pass. Do not substitute `bm doctor --local`
-for this: it creates its own throwaway project, round-trips a file through
-only that, and never looks at `activity-log`.
+per-session recording. The layout check is periodic, not per session: whoever
+commits this project's Git repository first runs the installed layout checker
+(`python3 ~/.config/opencode/skills/memory-curation/scripts/check-layout.py`)
+and fixes what it reports, confirming each fixed record with `bm tool read-note
+--project activity-log <permalink> --json --frontmatter` and checking that
+`file_path` ends in `index.md`. Do not substitute `bm doctor --local` for
+this: it creates its own throwaway project, round-trips a file through only
+that, and never looks at `activity-log`.
