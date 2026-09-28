@@ -24,12 +24,12 @@ log.
   operation that changes note files or an approved bulk migration, run a full
   project reindex with `bm reindex --project <project> --full`.
 - Record a user-owned top-level session once, when its work is done: call
-  `memory_session_context`, then create its activity and continuity nodes in a
-  single bash call with no read-backs, following
-  `~/basic-memories/activity-log/README.md`. Trivial sessions record nothing.
-  Manager sessions record early and update their continuity on each material
-  change. A `W:` worker does not record itself; its parent manager aggregates
-  it.
+  `memory_session_context`, then run the `memory-curation` skill's
+  `scripts/record-activity.py` once, as in its `references/recording.md`,
+  without reading the activity-log README or the notes back. Trivial sessions
+  record nothing. Manager sessions record early and rerun it with `--update`
+  on each material change. A `W:` worker does not record itself; its parent
+  manager aggregates it.
 - Prefer activity over broad `history-search`; use history only for missing
   detail or exact session evidence.
 - Do not call generic `recent_activity` at startup; it reports memory changes,

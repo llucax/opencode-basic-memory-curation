@@ -20,6 +20,9 @@ installed on purpose:
   consistency for a specific note with `bm tool read-note --json
   --frontmatter`; `bm doctor` only self-tests the pipeline through its own
   throwaway project and never looks at the project you changed.
+- `skills/memory-curation/scripts/record-activity.py`: records a session in
+  `activity-log` in one command. It validates its input, writes both nodes
+  through `bm`, and checks the result, so agents never read the notes back.
 - `src/session-context.ts`: an opencode plugin registering one tool,
   `memory_session_context`, which returns the current session ID, the
   configured author, the session's directory and worktree, and cheap git
