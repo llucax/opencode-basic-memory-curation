@@ -67,9 +67,36 @@ test("buildSessionContext reports an error instead of a context when no author i
 })
 
 test("formatSessionContext emits JSON with the keys in the documented order", async () => {
-	const result = await buildSessionContext(INPUT, {}, { run: fakeGit, env: { [AUTHOR_ENV_VAR]: "llucax" } })
+	const result = await buildSessionContext(
+		INPUT,
+		{},
+		{ run: fakeGit, env: { [AUTHOR_ENV_VAR]: "llucax" }, getSessionTime: async () => 1234567890000 },
+	)
 	const text = formatSessionContext(result)
-	assert.deepEqual(Object.keys(JSON.parse(text)), ["session_id", "author", "directory", "worktree", "git"])
+	assert.deepEqual(Object.keys(JSON.parse(text)), ["session_id", "author", "directory", "worktree", "started_at", "git"])
+})
+
+test("buildSessionContext converts the fetched epoch milliseconds to an ISO 8601 UTC string", async () => {
+	const result = await buildSessionContext(
+		INPUT,
+		{},
+		{ run: fakeGit, env: { [AUTHOR_ENV_VAR]: "llucax" }, getSessionTime: async () => 1234567890000 },
+	)
+	assert.equal((result as SessionContext).started_at, "2009-02-13T23:31:30.000Z")
+})
+
+test("buildSessionContext omits started_at when no fetcher is given", async () => {
+	const result = await buildSessionContext(INPUT, {}, { run: fakeGit, env: { [AUTHOR_ENV_VAR]: "llucax" } })
+	assert.ok(!("started_at" in result), "the started_at key must be absent, not undefined")
+})
+
+test("buildSessionContext omits started_at when the fetcher fails to resolve a time", async () => {
+	const result = await buildSessionContext(
+		INPUT,
+		{},
+		{ run: fakeGit, env: { [AUTHOR_ENV_VAR]: "llucax" }, getSessionTime: async () => undefined },
+	)
+	assert.ok(!("started_at" in result), "the started_at key must be absent, not undefined")
 })
 
 test("formatSessionContext passes the error through as a plain line", () => {

@@ -2,6 +2,7 @@ import type { Plugin } from "@opencode-ai/plugin"
 import { tool } from "@opencode-ai/plugin"
 import type { ConfigLike } from "./author.ts"
 import { buildSessionContext, formatSessionContext } from "./context.ts"
+import { makeSessionTimeFetcher } from "./session-time.ts"
 
 /**
  * A file loaded as an opencode plugin must export only plugin factories: the
@@ -14,8 +15,9 @@ import { buildSessionContext, formatSessionContext } from "./context.ts"
  * "which session, which developer, which checkout" when an agent explicitly
  * asks.
  */
-export default (async () => {
+export default (async ({ client }) => {
 	let lastConfig: ConfigLike = {}
+	const getSessionTime = makeSessionTimeFetcher(client)
 
 	return {
 		config: async (config) => {
@@ -25,7 +27,7 @@ export default (async () => {
 		tool: {
 			memory_session_context: tool({
 				description:
-					"Identity for recording Basic Memory activity, continuity, or durable session evidence: current session ID, configured author, directory, worktree, and git position. Call once when creating the session record, not for recall or on every update.",
+					"Identity for recording Basic Memory activity, continuity, or durable session evidence: current session ID, configured author, directory, worktree, start time, and git position. Call once when creating the session record, not for recall or on every update.",
 				args: {},
 				async execute(_args, context) {
 					try {
@@ -36,6 +38,7 @@ export default (async () => {
 								worktree: context.worktree,
 							},
 							lastConfig,
+							{ getSessionTime },
 						)
 						return formatSessionContext(result)
 					} catch (error) {

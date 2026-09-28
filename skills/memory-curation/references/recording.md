@@ -23,18 +23,17 @@ resume) record nothing.
 ```sh
 python3 ~/.config/opencode/skills/memory-curation/scripts/record-activity.py \
   --session-id <session_id> --author <author> --directory <directory> \
-  --status complete --title "<title>" \
+  --started-at <started_at> --status complete --title "<title>" \
   --summary "<exactly one sentence.>" <<'EOF'
 Mission, decisions, blockers, next steps. Never a transcript or command log.
 EOF
 ```
 
-The three identity options are `memory_session_context`'s fields. `--status`
-is the state the session leaves its work in: `complete`, `blocked`, or
-`active` when more work is planned. The heredoc is the continuity body,
-without frontmatter or title heading. `started_at` comes from OpenCode's
-database; pass `--started-at` only if the script says it cannot find it.
-`--dry-run` prints the `bm` commands without writing.
+The four identity options are `memory_session_context`'s fields, `--started-at`
+included; the script does not look any of them up itself. `--status` is the
+state the session leaves its work in: `complete`, `blocked`, or `active` when
+more work is planned. The heredoc is the continuity body, without frontmatter
+or title heading. `--dry-run` prints the `bm` commands without writing.
 
 On an error, fix the input and rerun the same command; nothing is written
 until validation passes. If the error says the record was written but is
@@ -43,8 +42,10 @@ wrong, rerun with `--update`.
 ## Later updates
 
 Ordinary sessions do not update their records while they run. Two cases do,
-and both rerun the script with `--update`, which rewrites both nodes and keeps
-the recorded `started_at`:
+and both rerun the script with `--update`, passing `--started-at` again from
+a fresh `memory_session_context` call; it is the same session, so the value
+is always the one already recorded, and the script fails rather than silently
+rewriting it if it ever disagrees:
 
 - Manager sessions record once their purpose is clear and rerun on each
   material change, because the continuity is their compaction recovery point

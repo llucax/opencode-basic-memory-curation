@@ -25,7 +25,8 @@ installed on purpose:
   through `bm`, and checks the result, so agents never read the notes back.
 - `src/session-context.ts`: an opencode plugin registering one tool,
   `memory_session_context`, which returns the current session ID, the
-  configured author, the session's directory and worktree, and cheap git
+  configured author, the session's directory and worktree, its start time
+  (`started_at`, ISO 8601 UTC, from the opencode client), and cheap git
   position (root, branch, commit, origin) when the directory is a repository.
 - `snippets/AGENTS.md`: a short always-on section to paste into your own
   `AGENTS.md`, telling the agent when to recall and record activity.
@@ -194,8 +195,9 @@ npm install
 npm run check   # typecheck + unit tests
 ```
 
-The logic lives in `src/author.ts`, `src/git-info.ts` and `src/context.ts`,
-which are testable without loading anything into opencode. `src/session-context.ts`,
+The logic lives in `src/author.ts`, `src/git-info.ts`, `src/session-time.ts`
+and `src/context.ts`, which are testable without loading anything into
+opencode. `src/session-context.ts`,
 the file actually symlinked into opencode, only wires them together and must
 keep a single default export: opencode's plugin loader iterates every export in
 a loaded file and throws on the first one that is not a plugin factory, which

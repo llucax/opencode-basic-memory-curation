@@ -15,25 +15,26 @@ wrong and exits non-zero.
 
 Usage:
     record-activity.py --session-id ID --author A --directory D \\
-        --status STATUS --title TITLE --summary SENTENCE [--update] \\
-        [--started-at ISO] [--dry-run] <<'EOF'
+        --started-at ISO --status STATUS --title TITLE --summary SENTENCE \\
+        [--update] [--dry-run] <<'EOF'
     Continuity body (Markdown).
     EOF
 
-`--session-id`, `--author` and `--directory` come from memory_session_context.
-`--started-at` defaults to the session's creation time in OpenCode's database.
+`--session-id`, `--author`, `--directory` and `--started-at` all come
+straight from memory_session_context's fields; the script never invents or
+looks any of them up itself. `--update` still keeps the originally recorded
+`started_at`: if the given value disagrees with the record's, that is
+memory_session_context returning a different session's identity, and the
+script fails rather than silently rewriting history.
 """
 
 import argparse
 import json
-import os
 import re
 import shlex
-import sqlite3
 import subprocess
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
 
 PROJECT = "activity-log"
 SESSION_ID = re.compile(r"^ses_[A-Za-z0-9]{26}$")
@@ -61,28 +62,6 @@ def parse_iso(value: str) -> datetime:
     if moment.tzinfo is None:
         raise Failure(f"--started-at `{value}` has no timezone; use UTC (`...Z`)")
     return moment
-
-
-def session_start(session_id: str) -> datetime:
-    """Read the session's creation time from OpenCode's database, read-only."""
-    data = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))
-    db = data / "opencode" / "opencode.db"
-    hint = "pass --started-at explicitly"
-    if not db.exists():
-        raise Failure(f"{db} not found to look up the session start; {hint}")
-    try:
-        conn = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=10)
-        try:
-            row = conn.execute(
-                "SELECT time_created FROM session WHERE id = ?", (session_id,)
-            ).fetchone()
-        finally:
-            conn.close()
-    except sqlite3.Error as exc:
-        raise Failure(f"cannot read the session start from {db}: {exc}; {hint}") from exc
-    if row is None:
-        raise Failure(f"session {session_id} is not in {db}; {hint}")
-    return datetime.fromtimestamp(row[0] / 1000, tz=timezone.utc)
 
 
 def validate(args: argparse.Namespace, body: str) -> list[str]:
@@ -193,7 +172,7 @@ def main() -> int:
     parser.add_argument("--status", required=True, choices=STATUSES)
     parser.add_argument("--title", required=True, help="activity title")
     parser.add_argument("--summary", required=True, help="exactly one sentence")
-    parser.add_argument("--started-at", help="ISO 8601 UTC; default: from OpenCode")
+    parser.add_argument("--started-at", required=True, help="ISO 8601 UTC, from memory_session_context")
     parser.add_argument(
         "--update", action="store_true",
         help="rewrite an existing record (resumed or manager sessions)",
@@ -211,10 +190,7 @@ def main() -> int:
         if problems:
             raise Failure("invalid input:\n" + "\n".join(f"- {p}" for p in problems))
 
-        started = (
-            parse_iso(args.started_at) if args.started_at
-            else session_start(args.session_id)
-        )
+        started = parse_iso(args.started_at)
         sid = args.session_id
         folder = f"sessions/{started:%Y}/{started:%m}/{sid}"
         continuity = f"{folder}/continuity"
@@ -233,8 +209,12 @@ def main() -> int:
                     f"{folder} already exists; pass --update to rewrite it"
                 )
             old_start = (existing.get("frontmatter") or {}).get("started_at")
-            if old_start and not args.started_at:
-                started = parse_iso(str(old_start))
+            if old_start and parse_iso(str(old_start)) != started:
+                raise Failure(
+                    f"--started-at `{args.started_at}` does not match the "
+                    f"record's `{old_start}`; pass memory_session_context's "
+                    "current started_at, which never changes for this session"
+                )
         elif args.update:
             raise Failure(f"--update given but {folder} does not exist")
 
