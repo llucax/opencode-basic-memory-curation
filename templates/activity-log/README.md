@@ -61,19 +61,11 @@ PR, issue, and deployment state live before acting.
 
 ## Recording
 
-Record a session once, when its work is done, not as it goes. Call
-`memory_session_context` for its identity, then create both nodes in a single
-bash call, with no read-backs and no layout check. Each node takes two `bm
-tool` commands. First `write-note --folder "sessions/YYYY/MM/<session-id>"
---title index --type activity` (or `.../continuity --type continuity` for the
-child), with the exact stable permalink in the content's opening frontmatter;
-`write-note` has no `--metadata` flag, so the permalink MUST be set there, not
-passed any other way. Because the filename derives from `--title`, this lands
-the file at exactly `.../index.md`. Then `edit-note --operation find_replace
---find-text "title: index" --content "title: <real title>"` to fix the DB
-title; `find_replace` can do this because it reaches into frontmatter as well
-as the body. Select `activity-log` explicitly on every Basic Memory call. See
-the `memory-curation` skill's `references/recording.md` for the full commands.
+Record a session once, when its work is done, not as it goes: call
+`memory_session_context`, then run
+`~/.config/opencode/skills/memory-curation/scripts/record-activity.py` once,
+as shown in that skill's `references/recording.md`. Do not read the notes
+back; the script validates, writes and checks both nodes.
 
 Set `status` to the state the session leaves its work in: `complete`,
 `blocked` when it waits on something, or `active` when more work is planned.
@@ -84,14 +76,13 @@ lookups that leave nothing to resume.
 
 Manager sessions are the exception. Their continuity is their compaction
 recovery point and holds running state such as the notifications-sweep tally,
-so they create both nodes once their purpose is clear and update the
-continuity on each material change, batching the edits for one change into a
-single bash call, still with no read-backs.
+so they record once their purpose is clear and rerun the script with
+`--update` on each material change.
 
-Use `bm tool edit-note` for every later content or metadata update and `bm
-tool delete-note` for deletion. Never create, edit, move, or delete a file in
-this project through raw filesystem tools; if `bm` is genuinely unavailable,
-defer the record instead.
+Use the script with `--update` to rewrite a record, `bm tool edit-note` for a
+one-field fix, and `bm tool delete-note` for deletion. Never create, edit,
+move, or delete a file in this project through raw filesystem tools; if `bm`
+is genuinely unavailable, defer the record instead.
 
 A Git operation that changes Markdown, or an explicitly approved bulk
 migration, is the only direct-mutation exception. Immediately run
@@ -115,10 +106,9 @@ when no exact time survives; never manufacture precision. The parent
 unique across the project.
 
 When a finished session resumes and does more work, update its records once
-more when that work is done, in a single bash call: `last_active_at`, `status`
-and the continuity. Once it is finished again, keep the completed record
-unchanged except to correct a factual error; do not rewrite historical state
-to match the present.
+more when that work is done, rerunning the script with `--update`. Once it is
+finished again, keep the completed record unchanged except to correct a
+factual error; do not rewrite historical state to match the present.
 
 Durable decisions, recurring failure modes, and reusable lessons belong in a
 canonical note in `personal` or the relevant shared knowledge project. Link to
