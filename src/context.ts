@@ -1,5 +1,6 @@
 import { type ConfigLike, MISSING_AUTHOR_MESSAGE, resolveAuthor } from "./author.ts"
 import { collectGitInfo, type GitInfo, type GitRunner } from "./git-info.ts"
+import type { SessionTimeFetcher } from "./session-time.ts"
 
 /** The JSON payload the tool returns. Field names are snake_case, as the plan specifies. */
 export interface SessionContext {
@@ -7,6 +8,8 @@ export interface SessionContext {
 	author: string
 	directory: string
 	worktree: string
+	/** ISO 8601 UTC. Omitted when the session-time lookup fails or was not given. */
+	started_at?: string
 	git?: GitInfo
 }
 
@@ -22,6 +25,8 @@ export interface BuildSessionContextOptions {
 	run?: GitRunner
 	/** Overrides the environment author lookup, for tests. */
 	env?: NodeJS.ProcessEnv
+	/** Fetches the session's creation time. Omitted entirely, `started_at` is left out too. */
+	getSessionTime?: SessionTimeFetcher
 }
 
 /**
@@ -43,6 +48,11 @@ export async function buildSessionContext(
 		author,
 		directory: input.directory,
 		worktree: input.worktree,
+	}
+
+	if (options.getSessionTime) {
+		const created = await options.getSessionTime(input.sessionID)
+		if (created !== undefined) context.started_at = new Date(created).toISOString()
 	}
 
 	const git = await collectGitInfo(input.directory, options.run)
