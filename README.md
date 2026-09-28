@@ -47,24 +47,30 @@ Everything is explicit. Nothing here installs itself.
 git clone https://github.com/llucax/opencode-basic-memory-curation
 cd opencode-basic-memory-curation
 npm install
-ln -sfn "$PWD/src/session-context.ts" ~/.config/opencode/plugins/opencode-basic-memory-curation.ts
 ln -sfn "$PWD/skills/memory-curation" ~/.config/opencode/skills/memory-curation
+```
+
+Add the plugin to the `plugin` array in `~/.config/opencode/opencode.jsonc`,
+with a path to this clone, absolute or relative to the config file:
+
+```jsonc
+"plugin": ["/path/to/opencode-basic-memory-curation/src/session-context.ts"]
 ```
 
 Then paste `snippets/AGENTS.md` into your own `AGENTS.md` by hand, and restart
 opencode.
 
-This clone is install-only. The symlinks above make
-`~/.config/opencode/skills/memory-curation` and the plugin path resolve
-directly into it, so an edit made through either config path edits this
-clone's working tree, not a copy of it. Do not develop against this checkout:
-make a separate clone for changes, commit and push there, then `git pull`
-this one to pick them up. Editing the installed clone directly leaves
-uncommitted changes that a later `git pull` or `git checkout` here can
-silently discard.
+This clone is install-only. The skill symlink above makes
+`~/.config/opencode/skills/memory-curation` resolve directly into it, and the
+plugin array entry points straight at this clone too, so an edit made through
+either config path edits this clone's working tree, not a copy of it. Do not
+develop against this checkout: make a separate clone for changes, commit and
+push there, then `git pull` this one to pick them up. Editing the installed
+clone directly leaves uncommitted changes that a later `git pull` or `git
+checkout` here can silently discard.
 
 `npm install` is required, not optional: module resolution follows the
-symlink's real path, so `@opencode-ai/plugin` is resolved from this repo's own
+entry's path, so `@opencode-ai/plugin` is resolved from this repo's own
 `node_modules`.
 
 Create and register the private activity project separately:
@@ -198,7 +204,7 @@ npm run check   # typecheck + unit tests
 The logic lives in `src/author.ts`, `src/git-info.ts`, `src/session-time.ts`
 and `src/context.ts`, which are testable without loading anything into
 opencode. `src/session-context.ts`,
-the file actually symlinked into opencode, only wires them together and must
+the file listed in opencode's `plugin` array, only wires them together and must
 keep a single default export: opencode's plugin loader iterates every export in
 a loaded file and throws on the first one that is not a plugin factory, which
 would silently take the tool down with it.
